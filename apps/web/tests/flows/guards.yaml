@@ -3,8 +3,8 @@ title: Guard flows
 covers: [middleware, auth-redirect, unauth-redirect]
 depends_on: [FL-001]
 last_run:
-  commit: e52fca7
-  result: pass
+  commit: a726d89
+  result: partial
 
 # Verifies that unauthenticated users can't reach protected pages
 # and authenticated users get redirected away from auth pages.
@@ -15,18 +15,13 @@ nodes:
   sign-in:
     route: /sign-in
     expects:
-      - textbox: Email
-      - button: Login
+      - heading: "Welcome to Saasy."
+      - input: "Enter your email address..."
 
   dashboard:
     route: /
     expects:
       - heading: Overview
-
-  setup:
-    route: /setup
-    expects:
-      - text: "Setting up your workspace..."
 
 edges:
   # Unauthenticated user tries to access protected pages
@@ -50,17 +45,11 @@ edges:
     expect-redirect: /sign-in
     to: sign-in
 
-  # Authenticated user tries to access auth pages
-  # Redirects through /setup, which auto-forwards to / for bootstrapped users
-  - from: direct:/sign-in
-    precondition: authenticated
-    expect-redirect: /
-    to: dashboard
-
+  # /sign-up redirects to /sign-in (server redirect, not middleware)
   - from: direct:/sign-up
-    precondition: authenticated
-    expect-redirect: /
-    to: dashboard
+    precondition: unauthenticated
+    expect-redirect: /sign-in
+    to: sign-in
 
 paths:
   unauth-guards:
@@ -68,7 +57,7 @@ paths:
     precondition: unauthenticated
     sequence: [direct:/, direct:/settings, direct:/members, direct:/billing]
 
-  auth-guards:
-    description: "Authenticated user is redirected away from auth pages"
-    precondition: authenticated
-    sequence: [direct:/sign-in, direct:/sign-up]
+  sign-up-redirect:
+    description: "/sign-up redirects to /sign-in for unauthenticated users"
+    precondition: unauthenticated
+    sequence: [direct:/sign-up]

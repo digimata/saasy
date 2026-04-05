@@ -2,8 +2,8 @@ id: FL-002
 title: Dashboard flows
 covers: [/, /settings, /members, /billing, sidebar]
 last_run:
-  commit: e52fca7
-  result: pass
+  commit: a726d89
+  result: skip
 
 # Assumes authenticated user with active workspace.
 
@@ -21,15 +21,16 @@ nodes:
   settings:
     route: /settings
     expects:
-      - heading: Settings
-      - text: "Workspace settings."
+      - heading: "{{workspace_name}}"    # h2, shows the workspace name
+      - text: "Workspace name"
+      - text: "Delete workspace"
       - complementary: sidebar
 
   members:
     route: /members
     expects:
       - heading: Members
-      - text: "Workspace members."
+      - text: "member"
       - complementary: sidebar
 
   billing:

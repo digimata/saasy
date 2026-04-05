@@ -1,11 +1,12 @@
 id: FL-001
 title: Auth flows
-covers: [/sign-in, /sign-up, /setup, sign-out]
+covers: [/sign-in, /sign-up, /onboard, sign-out]
 last_run:
-  commit: e52fca7
+  commit: a726d89
   result: pass
 
 # Covers the core identity paths every user hits.
+# Auth UX: email OTP flow (no password), animated transitions, OAuth row.
 
 base_url: http://localhost:3000
 
@@ -13,26 +14,35 @@ nodes:
   sign-in:
     route: /sign-in
     expects:
-      - textbox: Email
-      - textbox: Password
-      - button: Login
-      - link: Sign Up
+      - input: "Enter your email address..."    # InputBubble placeholder
+      - heading: "Welcome to Saasy."
+      # OAuth buttons are conditional on env vars — don't assert
 
-  sign-up:
-    route: /sign-up
+  # /sign-up now redirects to /sign-in
+  sign-up-redirect:
+    route: /sign-in
     expects:
-      - textbox: Name
-      - textbox: Email
-      - textbox: Password
-      - button: "Create an account"
-      - link: Sign In
+      - heading: "Welcome to Saasy."
 
-  # Transient — bootstraps workspace, redirects without user action
+  # After email submit: OTP verification step (same page, animated swap)
+  otp-step:
+    route: /sign-in
+    expects:
+      - heading: "Enter the code you received"
+      - text: "verification code"
+      - button: "Verify your email"
+      - button: Back
+
+  # Manual workspace creation form
   setup:
-    route: /setup
+    route: /onboard
     expects:
-      - text: "Setting up your workspace..."
-    auto: dashboard
+      - heading: "Create a workspace"
+      - input: "Workspace name"
+      - input: URL
+      - button: "Create workspace"
+      - text: "Logged in as"
+      - link: "Sign out"
 
   dashboard:
     route: /
@@ -40,63 +50,46 @@ nodes:
       - heading: Overview
       - text: "Welcome to your workspace."
       - complementary: sidebar
-      - button: Sign out
 
 edges:
-  # --- Flow 1: New user sign-up ---
-  # Cold start. No account, no session, no workspace.
+  # --- Flow 1: Email → OTP → Setup → Dashboard ---
   - from: sign-in
-    action: click "Sign Up"
-    to: sign-up
+    action: fill email input with "test-{{run_id}}@example.com", click arrow button
+    to: otp-step
+    note: "OTP code must be retrieved from server logs or test mailbox"
 
-  - from: sign-up
-    action: fill [Name, Email, Password], click "Create an account"
-    to: setup
-    input:
-      Name: Test User
-      Email: test-{{run_id}}@example.com
-      Password: TestPass123!
+  # Can't complete OTP in automated test without mail access.
+  # The remaining steps are documented for manual verification.
 
-  - from: setup
-    to: dashboard
+  # --- Flow 2: /sign-up redirects to /sign-in ---
+  - from: direct:/sign-up
+    precondition: unauthenticated
+    expect-redirect: /sign-in
+    to: sign-up-redirect
 
-  # --- Flow 2: Sign-out ---
-  # From authenticated dashboard back to sign-in.
-  - from: dashboard
-    action: click "Sign out"
-    to: sign-in
-
-  # --- Flow 3: Returning user sign-in ---
-  # Account exists from flow 1. Session was cleared in flow 2.
-  - from: sign-in
-    action: fill [Email, Password], click "Login"
-    to: setup
-    input:
-      Email: "{{last_email}}"
-      Password: TestPass123!
-
-  - from: setup
-    to: dashboard
-
-  # --- Flow 4: Navigation between auth pages ---
-  - from: sign-in
-    action: click "Sign Up"
-    to: sign-up
-
-  - from: sign-up
-    action: click "Sign In"
+  # --- Flow 3: Back button on OTP step ---
+  - from: otp-step
+    action: click "Back"
     to: sign-in
 
 paths:
-  # Ordered by priority. Runner walks these top to bottom.
-  # Each path is a sequence of edge indices or named flows.
+  sign-in-page-renders:
+    description: "Sign-in page shows email input, heading, no card wrapper"
+    sequence: [sign-in]
+    precondition: unauthenticated
 
-  happy-path-new-user:
-    description: "Sign up, land on dashboard, sign out, sign back in"
-    sequence: [sign-in, sign-up, setup, dashboard, sign-in, setup, dashboard]
-    # start → click sign up → fill form → auto-redirect → sign out → sign in → dashboard
+  sign-up-redirects:
+    description: "/sign-up redirects to /sign-in"
+    sequence: [sign-up-redirect]
+    precondition: unauthenticated
 
-  auth-page-navigation:
-    description: "Toggle between sign-in and sign-up"
-    sequence: [sign-in, sign-up, sign-in]
+  email-to-otp:
+    description: "Submit email → animated transition to OTP step"
+    sequence: [sign-in, otp-step]
+    precondition: unauthenticated
+    note: "Requires email OTP to be configured on the server"
+
+  otp-back-button:
+    description: "Back button returns from OTP to email step"
+    sequence: [sign-in, otp-step, sign-in]
     precondition: unauthenticated
