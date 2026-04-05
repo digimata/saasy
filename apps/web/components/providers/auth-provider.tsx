@@ -29,7 +29,7 @@ export function AuthProvider({
       <AuthUIProvider
         authClient={authClient}
         basePath=""
-        redirectTo="/setup"
+        redirectTo="/"
         credentials={{ forgotPassword: false }}
         organization
         multiSession
