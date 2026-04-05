@@ -19,10 +19,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     redirect("/sign-in");
   }
 
+  if (!session.session.activeOrganizationId) {
+    redirect("/setup");
+  }
+
   return (
     <div className="h-full">
       <Sidebar />
-      <main className="ml-16 min-h-screen p-8">{children}</main>
+      <main className="ml-32 min-h-screen px-16 py-12 max-w-4xl">{children}</main>
     </div>
   );
 }

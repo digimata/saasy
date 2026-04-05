@@ -280,7 +280,10 @@ export function AuthView({
           view === "EMAIL_OTP" ||
           view === "SIGN_UP" ? (
             <Link
-              className={cn("text-foreground underline", classNames?.footerLink)}
+              className={cn(
+                "inline-flex items-center px-0 text-sm text-foreground underline underline-offset-4",
+                classNames?.footerLink
+              )}
               href={`${basePath}/${
                 viewPaths[
                   view === "SIGN_IN" || view === "MAGIC_LINK" || view === "EMAIL_OTP"
@@ -289,15 +292,9 @@ export function AuthView({
                 ]
               }${isHydrated ? window.location.search : ""}`}
             >
-              <Button
-                variant="link"
-                size="sm"
-                className={cn("px-0 text-foreground underline", classNames?.footerLink)}
-              >
-                {view === "SIGN_IN" || view === "MAGIC_LINK" || view === "EMAIL_OTP"
-                  ? loc.SIGN_UP
-                  : loc.SIGN_IN}
-              </Button>
+              {view === "SIGN_IN" || view === "MAGIC_LINK" || view === "EMAIL_OTP"
+                ? loc.SIGN_UP
+                : loc.SIGN_IN}
             </Link>
           ) : (
             <Button

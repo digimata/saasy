@@ -1,7 +1,7 @@
-import { drizzle } from "drizzle-orm/postgres-js"
-import postgres from "postgres"
-import { env } from "./env"
-import * as schema from "./schema"
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
+import { env } from "./env";
+import * as schema from "./schema";
 
 // --------------------------
 // projects/saasy/packages/db/src/index.ts
@@ -10,8 +10,8 @@ import * as schema from "./schema"
 // export const db        L16
 // --------------------------
 
-const client = postgres(env.DATABASE_URL)
+const client = postgres(env.DATABASE_URL);
 
-export const db = drizzle(client, { schema })
+export const db = drizzle(client, { schema });
 
-export * from "./schema"
+export * from "./schema";

@@ -1,15 +1,16 @@
 ---
 path: projects/saasy/docs/ARCHITECTURE.md
 outline: |
-  • Architecture                  L15
-    ◦ 1. Monorepo Structure       L23
-    ◦ 2. Auth                     L41
-      ▪ Identity Model            L57
-    ◦ 3. Workspaces               L73
-    ◦ 4. Billing Stub             L83
-    ◦ 5. Database                 L95
-    ◦ 6. UI                      L113
-    ◦ 7. Decisions               L122
+  • Architecture                  L16
+    ◦ 1. Monorepo Structure       L24
+    ◦ 2. Auth                     L42
+      ▪ Identity Model            L58
+      ▪ Route Access Policy       L72
+    ◦ 3. Workspaces               L91
+    ◦ 4. Billing Stub            L101
+    ◦ 5. Database                L113
+    ◦ 6. UI                      L131
+    ◦ 7. Decisions               L140
 ---
 
 # Architecture
@@ -67,6 +68,23 @@ BetterAuth runs embedded in the Next.js app via a catch-all API route (`/api/aut
 | `auth.invitations`   | Pending workspace invites                        |
 
 BetterAuth's organization plugin maps to `auth.workspaces`, `auth.memberships`, and `auth.invitations` via adapter config. BetterAuth is not the source of truth — the Drizzle schema is.
+
+### Route Access Policy
+
+Route behavior is defined in terms of a validated session and a validated active workspace.
+
+| Route class | No valid session | Valid session, no active workspace | Valid session, active workspace |
+| ----------- | ---------------- | ---------------------------------- | ------------------------------- |
+| `/sign-in`, `/sign-up` | Allow | Redirect to `/setup` | Redirect to `/` |
+| `/setup` | Redirect to `/sign-in` | Allow | Redirect to `/` |
+| Protected app routes | Redirect to `/sign-in` | Redirect to `/setup` | Allow |
+
+Middleware is intentionally weaker than the route contract above.
+
+- Middleware may use negative evidence only: if there is definitely no BetterAuth session cookie, treat the request as anonymous.
+- Middleware must not treat cookie presence as proof of a valid session.
+- Middleware must not decide whether a user should go to `/setup` or `/`.
+- Positive auth decisions belong to validated session reads in auth pages, `/setup`, and dashboard layouts.
 
 ---
 

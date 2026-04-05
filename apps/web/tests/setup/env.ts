@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,7 +12,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../");
 const envPath = path.join(repoRoot, ".env.local");
 
-if (typeof process.loadEnvFile === "function") {
+if (typeof process.loadEnvFile === "function" && fs.existsSync(envPath)) {
   process.loadEnvFile(envPath);
 }
 

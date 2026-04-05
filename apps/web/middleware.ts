@@ -1,25 +1,42 @@
+import { getSessionCookie } from "better-auth/cookies";
 import { NextRequest, NextResponse } from "next/server";
+
+import { evaluateMiddlewarePolicy } from "@/lib/auth/middleware-policy";
 
 // -----------------------------------
 // projects/saasy/apps/web/middleware.ts
 //
-// export function middleware()    L10
-// export const config             L28
+// export function middleware()    L23
+// export const config             L46
 // -----------------------------------
 
+/**
+ * Middleware is intentionally conservative.
+ *
+ * Semantics:
+ * - A missing BetterAuth session cookie is enough to conclude that a protected request is anonymous.
+ * - A present cookie is not enough to conclude that the request is authenticated or workspace-initialized.
+ * - Positive auth decisions belong to validated session reads in auth pages, `/setup`, and `/(dash)/layout.tsx`.
+ *
+ * Pseudocode:
+ * 1. Classify auth entry routes (`/sign-in`, `/sign-up`).
+ * 2. Read the BetterAuth session cookie using BetterAuth's cookie helper.
+ * 3. If the request targets a protected route and there is definitely no session cookie, redirect to `/sign-in`.
+ * 4. Otherwise allow the request and let page/layout code validate the session and active workspace.
+ */
+
 export function middleware(request: NextRequest) {
-  const sessionCookie = request.cookies.get("better-auth.session_token");
+  const { pathname, search } = request.nextUrl;
+  const sessionCookie = getSessionCookie(request.headers);
 
-  const isAuthPage =
-    request.nextUrl.pathname.startsWith("/sign-in") ||
-    request.nextUrl.pathname.startsWith("/sign-up");
+  const decision = evaluateMiddlewarePolicy({
+    pathname,
+    search,
+    hasSessionCookie: !!sessionCookie,
+  });
 
-  if (!sessionCookie && !isAuthPage && request.nextUrl.pathname !== "/") {
-    return NextResponse.redirect(new URL("/sign-in", request.url));
-  }
-
-  if (sessionCookie && isAuthPage) {
-    return NextResponse.redirect(new URL("/", request.url));
+  if (decision.kind === "redirect") {
+    return NextResponse.redirect(new URL(decision.location, request.url));
   }
 
   return NextResponse.next();

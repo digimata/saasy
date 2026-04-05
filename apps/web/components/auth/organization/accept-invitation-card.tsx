@@ -8,7 +8,7 @@
 // export function AcceptInvitationCard()         L35
 // function AcceptInvitationContent()             L85
 // invitationId                                   L90
-// const AcceptInvitationSkeleton                L269
+// const AcceptInvitationSkeleton                L270
 // --------------------------------------------------
 
 "use client";

@@ -1,59 +1,81 @@
 // --------------------------------------------
 // projects/saasy/apps/web/components/dashboard/sidebar.tsx
 //
-// const navItems                           L18
-// export function Sidebar()                L25
-// export async function handleSignOut()    L25
+// const navItems                           L19
+// export function Sidebar()                L26
+// export async function handleSignOut()    L26
 // --------------------------------------------
 
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { Settings, Users, CreditCard, LayoutDashboard, LogOut } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { useTheme } from "@/components/providers/theme-provider";
+import { Users, CreditCard, LayoutDashboard, LogOut, Monitor, Moon, Settings, Sun, User } from "lucide-react";
+import { signOut, useSession } from "@repo/auth/client";
 
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-const navItems = [
+const topNavItems = [
   { label: "Overview", href: "/", icon: LayoutDashboard },
-  { label: "Settings", href: "/settings", icon: Settings },
   { label: "Members", href: "/members", icon: Users },
   { label: "Billing", href: "/billing", icon: CreditCard },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
-  const [hovered, setHovered] = useState(false);
+  const { data: session } = useSession();
+  const { theme, setTheme } = useTheme();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   async function handleSignOut() {
-    // (TODO): Wire the actual sign out logic
-    router.push("/sign-in");
+    if (isSigningOut) return;
+
+    setIsSigningOut(true);
+
+    void signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          window.location.replace("/sign-in");
+        },
+      },
+    }).catch(() => {
+      setIsSigningOut(false);
+    });
   }
 
   return (
     <aside
-      className="fixed top-0 left-0 h-full w-16 z-40 flex flex-col justify-between py-8 px-4 border-r border-border bg-background transition-all duration-300 hover:w-52"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="group fixed top-0 left-0 h-full w-20 z-40 flex flex-col justify-between py-8 px-5 bg-background overflow-visible"
     >
+      {/* Top: logo + main nav */}
       <div>
-        {/* Logo / workspace initial */}
         <div className="grid place-items-center size-8 mb-8">
           <div className="bg-primary text-primary-foreground flex items-center justify-center rounded-lg size-8 text-xs font-bold">
             S
           </div>
         </div>
 
-        {/* Nav */}
         <nav className="grid gap-1">
-          {navItems.map((item) => {
+          {topNavItems.map((item) => {
             const active = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                prefetch={false}
                 className={cn(
                   "flex items-center gap-3 h-10 transition-colors duration-200",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
@@ -63,12 +85,7 @@ export function Sidebar() {
                   <item.icon className="size-4" />
                 </span>
                 <span
-                  className={cn(
-                    "text-sm font-medium whitespace-nowrap transition-all duration-300",
-                    hovered
-                      ? "translate-x-0 opacity-100 blur-none"
-                      : "translate-x-[-8px] opacity-0 blur-sm"
-                  )}
+                  className="text-sm font-medium whitespace-nowrap transition-all duration-300 -translate-x-2 opacity-0 blur-sm group-hover:translate-x-0 group-hover:opacity-100 group-hover:blur-none"
                 >
                   {item.label}
                 </span>
@@ -78,23 +95,92 @@ export function Sidebar() {
         </nav>
       </div>
 
-      {/* Bottom: sign out */}
-      <button
-        // onClick={handleSignOut}
-        className="flex items-center gap-3 h-10 text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
-      >
-        <span className="grid place-items-center w-8 shrink-0">
-          <LogOut className="size-4" />
-        </span>
-        <span
+      {/* Bottom: settings, avatar */}
+      <div className="grid gap-1">
+        <Link
+          href="/settings"
+          prefetch={false}
           className={cn(
-            "text-sm font-medium whitespace-nowrap transition-all duration-300",
-            hovered ? "translate-x-0 opacity-100 blur-none" : "translate-x-[-8px] opacity-0 blur-sm"
+            "flex items-center gap-3 h-10 transition-colors duration-200",
+            pathname === "/settings"
+              ? "text-foreground"
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
-          Sign out
-        </span>
-      </button>
+          <span className="grid place-items-center w-8 shrink-0">
+            <Settings className="size-4" />
+          </span>
+          <span className="text-sm font-medium whitespace-nowrap transition-all duration-300 -translate-x-2 opacity-0 blur-sm group-hover:translate-x-0 group-hover:opacity-100 group-hover:blur-none">
+            Settings
+          </span>
+        </Link>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              type="button"
+              className="flex items-center gap-3 h-10 mt-2 cursor-pointer text-left"
+            >
+              <span className="grid place-items-center w-8 shrink-0">
+                {session?.user?.image ? (
+                  <img
+                    src={session.user.image}
+                    alt=""
+                    className="size-8 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="bg-muted text-muted-foreground flex items-center justify-center rounded-full size-8 text-xs font-medium">
+                    {session?.user?.name?.[0]?.toUpperCase() || <User className="size-4" />}
+                  </div>
+                )}
+              </span>
+              <span className="text-sm font-medium whitespace-nowrap transition-all duration-300 truncate -translate-x-2 opacity-0 blur-sm group-hover:translate-x-0 group-hover:opacity-100 group-hover:blur-none">
+                {session?.user?.name || session?.user?.email}
+              </span>
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent side="right" align="end" className="w-56">
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="font-normal">
+                <div className="text-sm font-medium">{session?.user?.name}</div>
+                <div className="text-xs text-muted-foreground">{session?.user?.email}</div>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                Theme
+              </DropdownMenuLabel>
+              <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+                <DropdownMenuRadioItem value="system">
+                  <Monitor className="size-4 mr-2" />
+                  System
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="light">
+                  <Sun className="size-4 mr-2" />
+                  Light
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="dark">
+                  <Moon className="size-4 mr-2" />
+                  Dark
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuGroup>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={handleSignOut} disabled={isSigningOut}>
+                <LogOut className="size-4 mr-2" />
+                Sign out
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </aside>
   );
 }

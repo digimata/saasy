@@ -54,13 +54,13 @@ The web app runs at `http://localhost:3000`.
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `pnpm dev` | Start all apps in development mode |
-| `pnpm build` | Build all apps and packages |
-| `pnpm lint` | Lint all packages |
-| `pnpm format` | Format code with Prettier |
-| `pnpm check-types` | Type-check all packages |
+| Command            | Description                        |
+| ------------------ | ---------------------------------- |
+| `pnpm dev`         | Start all apps in development mode |
+| `pnpm build`       | Build all apps and packages        |
+| `pnpm lint`        | Lint all packages                  |
+| `pnpm format`      | Format code with Prettier          |
+| `pnpm check-types` | Type-check all packages            |
 
 ## Docs
 

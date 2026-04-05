@@ -1,0 +1,67 @@
+# Guard flows — middleware redirects, auth boundaries
+# Verifies that unauthenticated users can't reach protected pages
+# and authenticated users get redirected away from auth pages.
+
+base_url: http://localhost:3000
+
+nodes:
+  sign-in:
+    route: /sign-in
+    expects:
+      - textbox: Email
+      - button: Login
+
+  dashboard:
+    route: /
+    expects:
+      - heading: Overview
+
+  setup:
+    route: /setup
+    expects:
+      - text: "Setting up your workspace..."
+
+edges:
+  # Unauthenticated user tries to access protected pages
+  - from: direct:/
+    precondition: unauthenticated
+    expect-redirect: /sign-in
+    to: sign-in
+
+  - from: direct:/settings
+    precondition: unauthenticated
+    expect-redirect: /sign-in
+    to: sign-in
+
+  - from: direct:/members
+    precondition: unauthenticated
+    expect-redirect: /sign-in
+    to: sign-in
+
+  - from: direct:/billing
+    precondition: unauthenticated
+    expect-redirect: /sign-in
+    to: sign-in
+
+  # Authenticated user tries to access auth pages
+  # Redirects through /setup, which auto-forwards to / for bootstrapped users
+  - from: direct:/sign-in
+    precondition: authenticated
+    expect-redirect: /
+    to: dashboard
+
+  - from: direct:/sign-up
+    precondition: authenticated
+    expect-redirect: /
+    to: dashboard
+
+paths:
+  unauth-guards:
+    description: "Unauthenticated user is blocked from all dashboard routes"
+    precondition: unauthenticated
+    sequence: [direct:/, direct:/settings, direct:/members, direct:/billing]
+
+  auth-guards:
+    description: "Authenticated user is redirected away from auth pages"
+    precondition: authenticated
+    sequence: [direct:/sign-in, direct:/sign-up]

@@ -1,0 +1,96 @@
+# Auth flows — registration, login, sign-out
+# Covers the core identity paths every user hits.
+
+base_url: http://localhost:3000
+
+nodes:
+  sign-in:
+    route: /sign-in
+    expects:
+      - textbox: Email
+      - textbox: Password
+      - button: Login
+      - link: Sign Up
+
+  sign-up:
+    route: /sign-up
+    expects:
+      - textbox: Name
+      - textbox: Email
+      - textbox: Password
+      - button: "Create an account"
+      - link: Sign In
+
+  # Transient — bootstraps workspace, redirects without user action
+  setup:
+    route: /setup
+    expects:
+      - text: "Setting up your workspace..."
+    auto: dashboard
+
+  dashboard:
+    route: /
+    expects:
+      - heading: Overview
+      - text: "Welcome to your workspace."
+      - complementary: sidebar
+      - button: Sign out
+
+edges:
+  # --- Flow 1: New user sign-up ---
+  # Cold start. No account, no session, no workspace.
+  - from: sign-in
+    action: click "Sign Up"
+    to: sign-up
+
+  - from: sign-up
+    action: fill [Name, Email, Password], click "Create an account"
+    to: setup
+    input:
+      Name: Test User
+      Email: test-{{run_id}}@example.com
+      Password: TestPass123!
+
+  - from: setup
+    to: dashboard
+
+  # --- Flow 2: Sign-out ---
+  # From authenticated dashboard back to sign-in.
+  - from: dashboard
+    action: click "Sign out"
+    to: sign-in
+
+  # --- Flow 3: Returning user sign-in ---
+  # Account exists from flow 1. Session was cleared in flow 2.
+  - from: sign-in
+    action: fill [Email, Password], click "Login"
+    to: setup
+    input:
+      Email: "{{last_email}}"
+      Password: TestPass123!
+
+  - from: setup
+    to: dashboard
+
+  # --- Flow 4: Navigation between auth pages ---
+  - from: sign-in
+    action: click "Sign Up"
+    to: sign-up
+
+  - from: sign-up
+    action: click "Sign In"
+    to: sign-in
+
+paths:
+  # Ordered by priority. Runner walks these top to bottom.
+  # Each path is a sequence of edge indices or named flows.
+
+  happy-path-new-user:
+    description: "Sign up, land on dashboard, sign out, sign back in"
+    sequence: [sign-in, sign-up, setup, dashboard, sign-in, setup, dashboard]
+    # start → click sign up → fill form → auto-redirect → sign out → sign in → dashboard
+
+  auth-page-navigation:
+    description: "Toggle between sign-in and sign-up"
+    sequence: [sign-in, sign-up, sign-in]
+    precondition: unauthenticated

@@ -1,26 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Geist } from "next/font/google";
+import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
+import { AuthProvider } from "@/components/providers/auth-provider";
 
-// -------------------------------------------
-// projects/saasy/apps/web/app/layout.tsx
-//
-// const geist                             L18
-// const geistSans                         L20
-// const geistMono                         L24
-// export const metadata                   L29
-// export default function RootLayout()    L34
-// children                                L37
-// -------------------------------------------
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-
-const geistSans = localFont({
-  src: "./fonts/GeistVF.woff",
-  variable: "--font-geist-sans",
-});
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -37,8 +23,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("font-sans", geist.variable)}>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>{children}</body>
+    <html lang="en" className={cn("dark font-sans", inter.variable)} suppressHydrationWarning>
+      <body className={`${geistMono.variable} antialiased`}>
+        <AuthProvider>{children}</AuthProvider>
+      </body>
     </html>
   );
 }

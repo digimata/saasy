@@ -1,0 +1,65 @@
+# Dashboard flows — navigation, page rendering
+# Assumes authenticated user with active workspace.
+
+base_url: http://localhost:3000
+precondition: authenticated
+
+nodes:
+  dashboard:
+    route: /
+    expects:
+      - heading: Overview
+      - text: "Welcome to your workspace."
+      - complementary: sidebar
+
+  settings:
+    route: /settings
+    expects:
+      - heading: Settings
+      - text: "Workspace settings."
+      - complementary: sidebar
+
+  members:
+    route: /members
+    expects:
+      - heading: Members
+      - text: "Workspace members."
+      - complementary: sidebar
+
+  billing:
+    route: /billing
+    expects:
+      - heading: Billing
+      - text: "Manage your subscription."
+      - complementary: sidebar
+
+edges:
+  - from: dashboard
+    action: click "Settings"
+    to: settings
+
+  - from: dashboard
+    action: click "Members"
+    to: members
+
+  - from: dashboard
+    action: click "Billing"
+    to: billing
+
+  # Return to overview from each page
+  - from: settings
+    action: click "Overview"
+    to: dashboard
+
+  - from: members
+    action: click "Overview"
+    to: dashboard
+
+  - from: billing
+    action: click "Overview"
+    to: dashboard
+
+paths:
+  sidebar-navigation:
+    description: "Visit every dashboard page via sidebar and return"
+    sequence: [dashboard, settings, dashboard, members, dashboard, billing, dashboard]
