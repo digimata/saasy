@@ -1,8 +1,10 @@
 import { createAuthClient } from "better-auth/react";
 import { organizationClient } from "better-auth/client/plugins";
 
-export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL!,
+const baseURL = process.env.NEXT_PUBLIC_APP_URL;
+
+const authClient = createAuthClient({
+  ...(baseURL ? { baseURL } : {}),
   plugins: [organizationClient()],
 });
 
@@ -11,5 +13,4 @@ export const {
   signUp,
   signOut,
   useSession,
-  organization,
 } = authClient;

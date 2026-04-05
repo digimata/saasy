@@ -13,7 +13,7 @@ outline: |
 
 ## Stack
 
-- [x] [T-0001](T-0001.md) :: Project scaffolding -- monorepo, deps, config
+- [ ] [T-0007](T-0007.md) :: Audit vendored auth UI -- strip unused, clean up stubs
 - [ ] [T-0002](T-0002.md) :: shadcn/ui init + dashboard layout
 - [ ] [T-0003](T-0003.md) :: Auth flows -- sign-up, sign-in, sign-out
 

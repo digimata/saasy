@@ -21,7 +21,7 @@ Last updated: `2026.04.04`
 - Use BetterAuth as the auth provider for all Next.js dashboard apps built from this template.
 - BetterAuth handles session management, OAuth provider callbacks, email/password, and wallet (SIWE) login.
 - The canonical identity data model (`auth.users`, `auth.accounts`, etc.) is ours — BetterAuth is wired to it via its Drizzle adapter, not the other way around.
-- BetterAuth's organization plugin maps to our `auth.workspaces` and `auth.members` tables via `modelName` remapping.
+- BetterAuth's organization plugin maps to our `auth.workspaces`, `auth.memberships`, and `auth.invitations` tables via adapter config.
 
 ## 2. Rationale
 
@@ -34,7 +34,7 @@ Last updated: `2026.04.04`
 **Why BetterAuth:**
 - Open-source (MIT), 27k+ stars, active development.
 - First-class Drizzle adapter — maps directly to our schema.
-- Organization plugin handles workspace/member/invite flows out of the box.
+- Organization plugin handles workspace/member/invite flows out of the box if the schema mapping is explicit and clean.
 - SIWE plugin for wallet login.
 - 2FA (TOTP) plugin.
 - No per-MAU costs. Runs in our infra.

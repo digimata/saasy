@@ -63,9 +63,10 @@ BetterAuth runs embedded in the Next.js app via a catch-all API route (`/api/aut
 | `auth.sessions` | Active sessions |
 | `auth.verifications` | Email verification tokens, password resets |
 | `auth.workspaces` | Organizational unit — owns billing, API keys |
-| `auth.members` | User-to-workspace membership + role |
+| `auth.memberships` | User-to-workspace membership + role |
+| `auth.invitations` | Pending workspace invites |
 
-BetterAuth's organization plugin maps to `auth.workspaces` and `auth.members` via `modelName` remapping. BetterAuth is not the source of truth — the Drizzle schema is.
+BetterAuth's organization plugin maps to `auth.workspaces`, `auth.memberships`, and `auth.invitations` via adapter config. BetterAuth is not the source of truth — the Drizzle schema is.
 
 ---
 
@@ -73,7 +74,7 @@ BetterAuth's organization plugin maps to `auth.workspaces` and `auth.members` vi
 
 A workspace is the organizational and billing unit. Every user belongs to at least one workspace. MVP creates an implicit 1:1 workspace on signup.
 
-- Schema supports multi-user workspaces from day one (via `auth.members`)
+- Schema supports multi-user workspaces from day one (via `auth.memberships`)
 - Role model: `admin` only for MVP
 - Member invites are future-ready in the schema but hidden in MVP UI
 
@@ -103,6 +104,8 @@ Credit ledgers, usage metering, and payment protocol integrations (x402, MPP) ar
 **Migrations:** `drizzle-kit` generates and runs migrations from the schema definition.
 
 **Driver:** `postgres` (postgres.js) — lightweight, no native bindings.
+
+Detailed ontology and table responsibilities live in [spec/db.md](spec/db.md).
 
 ---
 
