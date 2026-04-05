@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@repo/auth";
-import { Sidebar } from "@/components/dashboard/sidebar";
+import { Sidebar, Header } from "@/components/dashboard/sidebar";
 
 // ------------------------------------------------------
 // projects/saasy/apps/web/app/(dash)/layout.tsx
@@ -20,13 +20,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   if (!session.session.activeOrganizationId) {
-    redirect("/setup");
+    redirect("/onboard");
   }
 
   return (
-    <div className="h-full">
+    <div className="min-h-screen bg-background">
+      <Header />
       <Sidebar />
-      <main className="ml-32 min-h-screen px-16 py-12 max-w-4xl">{children}</main>
+      <main className="ml-32 mt-16 px-16 py-12 max-w-4xl">{children}</main>
     </div>
   );
 }
