@@ -4,6 +4,14 @@ import { organization } from "better-auth/plugins";
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
 
+// ----------------------------
+// projects/saasy/packages/auth/src/index.ts
+//
+// const socialProviders    L15
+// export const auth        L34
+// export type Auth         L89
+// ----------------------------
+
 const socialProviders = {
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
     ? {
@@ -32,8 +40,11 @@ export const auth = betterAuth({
       account: schema.accounts,
       verification: schema.verifications,
       organization: schema.workspaces,
+      workspaces: schema.workspaces,
       member: schema.memberships,
+      memberships: schema.memberships,
       invitation: schema.invitations,
+      invitations: schema.invitations,
     },
   }),
   advanced: {

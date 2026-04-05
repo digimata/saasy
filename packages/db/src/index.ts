@@ -1,9 +1,17 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
-import * as schema from "./schema";
+import { drizzle } from "drizzle-orm/postgres-js"
+import postgres from "postgres"
+import { env } from "./env"
+import * as schema from "./schema"
 
-const connectionString = process.env.DATABASE_URL ?? "";
-const client = postgres(connectionString);
+// --------------------------
+// projects/saasy/packages/db/src/index.ts
+//
+// const client           L14
+// export const db        L16
+// --------------------------
 
-export const db = drizzle(client, { schema });
-export * from "./schema";
+const client = postgres(env.DATABASE_URL)
+
+export const db = drizzle(client, { schema })
+
+export * from "./schema"

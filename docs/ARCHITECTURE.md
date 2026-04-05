@@ -5,11 +5,11 @@ outline: |
     ◦ 1. Monorepo Structure       L23
     ◦ 2. Auth                     L41
       ▪ Identity Model            L57
-    ◦ 3. Workspaces               L72
-    ◦ 4. Billing Stub             L82
-    ◦ 5. Database                 L94
-    ◦ 6. UI                      L109
-    ◦ 7. Decisions               L118
+    ◦ 3. Workspaces               L73
+    ◦ 4. Billing Stub             L83
+    ◦ 5. Database                 L95
+    ◦ 6. UI                      L113
+    ◦ 7. Decisions               L122
 ---
 
 # Architecture
@@ -56,15 +56,15 @@ BetterAuth runs embedded in the Next.js app via a catch-all API route (`/api/aut
 
 ### Identity Model
 
-| Table | Purpose |
-|---|---|
-| `auth.users` | Canonical user identity |
-| `auth.accounts` | External login identities (email, OAuth, wallet) |
-| `auth.sessions` | Active sessions |
-| `auth.verifications` | Email verification tokens, password resets |
-| `auth.workspaces` | Organizational unit — owns billing, API keys |
-| `auth.memberships` | User-to-workspace membership + role |
-| `auth.invitations` | Pending workspace invites |
+| Table                | Purpose                                          |
+| -------------------- | ------------------------------------------------ |
+| `auth.users`         | Canonical user identity                          |
+| `auth.accounts`      | External login identities (email, OAuth, wallet) |
+| `auth.sessions`      | Active sessions                                  |
+| `auth.verifications` | Email verification tokens, password resets       |
+| `auth.workspaces`    | Organizational unit — owns billing, API keys     |
+| `auth.memberships`   | User-to-workspace membership + role              |
+| `auth.invitations`   | Pending workspace invites                        |
 
 BetterAuth's organization plugin maps to `auth.workspaces`, `auth.memberships`, and `auth.invitations` via adapter config. BetterAuth is not the source of truth — the Drizzle schema is.
 
@@ -97,6 +97,7 @@ Credit ledgers, usage metering, and payment protocol integrations (x402, MPP) ar
 **ORM:** [Drizzle](https://orm.drizzle.team/) with PostgreSQL.
 
 **Schema strategy:** Separate PG schemas for different concerns:
+
 - `auth.*` — identity, sessions, workspaces, memberships
 - `billing.*` — Stripe customers, subscriptions (future)
 - `public.*` — app-specific data (added per-project)
@@ -122,8 +123,8 @@ Detailed ontology and table responsibilities live in [spec/db.md](spec/db.md).
 
 Architectural decisions are recorded in [`docs/decisions/`](decisions/).
 
-| ID | Decision | Date |
-|---|---|---|
-| ADR-001 | [BetterAuth over Clerk/WorkOS](decisions/001-betterauth.md) | 2026-04-04 |
-| ADR-002 | [Drizzle over Prisma](decisions/002-drizzle.md) | 2026-04-04 |
+| ID      | Decision                                                       | Date       |
+| ------- | -------------------------------------------------------------- | ---------- |
+| ADR-001 | [BetterAuth over Clerk/WorkOS](decisions/001-betterauth.md)    | 2026-04-04 |
+| ADR-002 | [Drizzle over Prisma](decisions/002-drizzle.md)                | 2026-04-04 |
 | ADR-003 | [Custom PG schema via search_path](decisions/003-pg-schema.md) | 2026-04-04 |

@@ -45,11 +45,11 @@ Last updated: `2026.04.04`
 
 The template uses PostgreSQL with separate logical schemas for different concerns.
 
-| Schema | Purpose |
-|---|---|
-| `auth.*` | Canonical identity, sessions, workspaces, memberships |
-| `billing.*` | Billing-provider linkage and subscription state |
-| `public.*` or app-specific schema | Product-specific application data |
+| Schema                            | Purpose                                               |
+| --------------------------------- | ----------------------------------------------------- |
+| `auth.*`                          | Canonical identity, sessions, workspaces, memberships |
+| `billing.*`                       | Billing-provider linkage and subscription state       |
+| `public.*` or app-specific schema | Product-specific application data                     |
 
 This is a single control-plane database, not a microservice split. The important boundary is logical isolation, not separate infrastructure.
 
@@ -69,15 +69,15 @@ Recommended table: `auth.users`
 
 Recommended logical fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `name` | Display name |
-| `email` | Email address; wallet-first nullability is an explicit open question |
-| `email_verified` | Verification status |
-| `image` | Optional avatar |
-| `created_at` | Audit timestamp |
-| `updated_at` | Audit timestamp |
+| Field            | Notes                                                                |
+| ---------------- | -------------------------------------------------------------------- |
+| `id`             | Primary key                                                          |
+| `name`           | Display name                                                         |
+| `email`          | Email address; wallet-first nullability is an explicit open question |
+| `email_verified` | Verification status                                                  |
+| `image`          | Optional avatar                                                      |
+| `created_at`     | Audit timestamp                                                      |
+| `updated_at`     | Audit timestamp                                                      |
 
 Important note: conceptually a user is not defined by email. Physically, we should stay as close as possible to BetterAuth's core user shape unless wallet-first support forces an adapter or nullable email strategy.
 
@@ -97,19 +97,19 @@ Recommended table: `auth.accounts`
 
 Recommended logical fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `user_id` | FK -> `auth.users.id` |
-| `provider_id` | `email`, `google`, `github`, `wallet_evm`, `wallet_solana` |
-| `account_id` | Provider-unique identity |
-| `access_token` | Optional provider token |
-| `refresh_token` | Optional provider token |
-| `id_token` | Optional provider token |
-| `scope` | Optional OAuth scope |
-| `password` | Optional password hash for email/password |
-| `created_at` | Audit timestamp |
-| `updated_at` | Audit timestamp |
+| Field           | Notes                                                      |
+| --------------- | ---------------------------------------------------------- |
+| `id`            | Primary key                                                |
+| `user_id`       | FK -> `auth.users.id`                                      |
+| `provider_id`   | `email`, `google`, `github`, `wallet_evm`, `wallet_solana` |
+| `account_id`    | Provider-unique identity                                   |
+| `access_token`  | Optional provider token                                    |
+| `refresh_token` | Optional provider token                                    |
+| `id_token`      | Optional provider token                                    |
+| `scope`         | Optional OAuth scope                                       |
+| `password`      | Optional password hash for email/password                  |
+| `created_at`    | Audit timestamp                                            |
+| `updated_at`    | Audit timestamp                                            |
 
 Important rule: `(provider_id, account_id)` must be unique.
 
@@ -125,15 +125,15 @@ Recommended table: `auth.workspaces`
 
 Recommended fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `name` | Display name |
-| `slug` | URL-safe unique identifier |
-| `logo` | Optional branding field |
-| `metadata` | Optional JSON for future extension |
-| `created_at` | Audit timestamp |
-| `updated_at` | Audit timestamp |
+| Field        | Notes                              |
+| ------------ | ---------------------------------- |
+| `id`         | Primary key                        |
+| `name`       | Display name                       |
+| `slug`       | URL-safe unique identifier         |
+| `logo`       | Optional branding field            |
+| `metadata`   | Optional JSON for future extension |
+| `created_at` | Audit timestamp                    |
+| `updated_at` | Audit timestamp                    |
 
 Important rule: billing-specific fields do **not** live on `auth.workspaces`.
 
@@ -147,13 +147,13 @@ A `membership` links a user to a workspace.
 
 Recommended fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `user_id` | FK -> `auth.users.id` |
+| Field          | Notes                      |
+| -------------- | -------------------------- |
+| `id`           | Primary key                |
+| `user_id`      | FK -> `auth.users.id`      |
 | `workspace_id` | FK -> `auth.workspaces.id` |
-| `role` | `admin` for MVP |
-| `created_at` | Audit timestamp |
+| `role`         | `admin` for MVP            |
+| `created_at`   | Audit timestamp            |
 
 Important rules:
 
@@ -171,17 +171,17 @@ Recommended table: `auth.sessions`
 
 Recommended fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `user_id` | FK -> `auth.users.id` |
-| `token` | Session token |
-| `expires_at` | Expiry timestamp |
+| Field                 | Notes                              |
+| --------------------- | ---------------------------------- |
+| `id`                  | Primary key                        |
+| `user_id`             | FK -> `auth.users.id`              |
+| `token`               | Session token                      |
+| `expires_at`          | Expiry timestamp                   |
 | `active_workspace_id` | Nullable current workspace context |
-| `ip_address` | Optional audit field |
-| `user_agent` | Optional audit field |
-| `created_at` | Audit timestamp |
-| `updated_at` | Audit timestamp |
+| `ip_address`          | Optional audit field               |
+| `user_agent`          | Optional audit field               |
+| `created_at`          | Audit timestamp                    |
+| `updated_at`          | Audit timestamp                    |
 
 ### 3.6 — Invitation
 
@@ -194,16 +194,16 @@ Recommended table: `auth.invitations`
 
 Recommended fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `workspace_id` | FK -> `auth.workspaces.id` |
-| `email` | Invitee email |
-| `role` | Role to assign on acceptance |
-| `status` | `pending`, `accepted`, `rejected`, `canceled` |
-| `inviter_user_id` | FK -> `auth.users.id` |
-| `expires_at` | Expiry timestamp |
-| `created_at` | Audit timestamp |
+| Field             | Notes                                         |
+| ----------------- | --------------------------------------------- |
+| `id`              | Primary key                                   |
+| `workspace_id`    | FK -> `auth.workspaces.id`                    |
+| `email`           | Invitee email                                 |
+| `role`            | Role to assign on acceptance                  |
+| `status`          | `pending`, `accepted`, `rejected`, `canceled` |
+| `inviter_user_id` | FK -> `auth.users.id`                         |
+| `expires_at`      | Expiry timestamp                              |
+| `created_at`      | Audit timestamp                               |
 
 ### 3.7 — Verification
 
@@ -220,14 +220,14 @@ Recommended table: `auth.verifications`
 
 Recommended fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
+| Field        | Notes                          |
+| ------------ | ------------------------------ |
+| `id`         | Primary key                    |
 | `identifier` | Email or other identity target |
-| `value` | Verification secret or token |
-| `expires_at` | Expiry timestamp |
-| `created_at` | Audit timestamp |
-| `updated_at` | Audit timestamp |
+| `value`      | Verification secret or token   |
+| `expires_at` | Expiry timestamp               |
+| `created_at` | Audit timestamp                |
+| `updated_at` | Audit timestamp                |
 
 ---
 
@@ -241,14 +241,14 @@ Recommended table: `billing.customers`
 
 Recommended fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `workspace_id` | FK -> `auth.workspaces.id` |
-| `provider` | `stripe` for the template MVP |
+| Field                  | Notes                               |
+| ---------------------- | ----------------------------------- |
+| `id`                   | Primary key                         |
+| `workspace_id`         | FK -> `auth.workspaces.id`          |
+| `provider`             | `stripe` for the template MVP       |
 | `provider_customer_id` | External billing-system customer ID |
-| `created_at` | Audit timestamp |
-| `updated_at` | Audit timestamp |
+| `created_at`           | Audit timestamp                     |
+| `updated_at`           | Audit timestamp                     |
 
 Important rule: a workspace should have at most one customer record per provider.
 
@@ -260,21 +260,21 @@ Recommended table: `billing.subscriptions`
 
 Recommended fields:
 
-| Field | Notes |
-|---|---|
-| `id` | Primary key |
-| `workspace_id` | FK -> `auth.workspaces.id` |
-| `customer_id` | FK -> `billing.customers.id` |
-| `provider` | `stripe` for template MVP |
-| `provider_subscription_id` | External subscription ID |
-| `plan` | `pro`, `ultra`, etc. |
-| `status` | `trialing`, `active`, `past_due`, `canceled`, etc. |
-| `interval` | `monthly`, `annual` |
-| `current_period_start` | Current billing period start |
-| `current_period_end` | Current billing period end |
-| `cancel_at_period_end` | Boolean |
-| `created_at` | Audit timestamp |
-| `updated_at` | Audit timestamp |
+| Field                      | Notes                                              |
+| -------------------------- | -------------------------------------------------- |
+| `id`                       | Primary key                                        |
+| `workspace_id`             | FK -> `auth.workspaces.id`                         |
+| `customer_id`              | FK -> `billing.customers.id`                       |
+| `provider`                 | `stripe` for template MVP                          |
+| `provider_subscription_id` | External subscription ID                           |
+| `plan`                     | `pro`, `ultra`, etc.                               |
+| `status`                   | `trialing`, `active`, `past_due`, `canceled`, etc. |
+| `interval`                 | `monthly`, `annual`                                |
+| `current_period_start`     | Current billing period start                       |
+| `current_period_end`       | Current billing period end                         |
+| `cancel_at_period_end`     | Boolean                                            |
+| `created_at`               | Audit timestamp                                    |
+| `updated_at`               | Audit timestamp                                    |
 
 Recommended rule: treat `free` as the absence of an active paid subscription, not as a special billing row.
 
@@ -316,23 +316,23 @@ Compatibility strategy:
 
 Recommended model mapping:
 
-| BetterAuth model | Canonical table |
-|---|---|
-| `user` | `auth.users` |
-| `account` | `auth.accounts` |
-| `session` | `auth.sessions` |
-| `verification` | `auth.verifications` |
-| `organization` | `auth.workspaces` |
-| `member` | `auth.memberships` |
-| `invitation` | `auth.invitations` |
+| BetterAuth model | Canonical table      |
+| ---------------- | -------------------- |
+| `user`           | `auth.users`         |
+| `account`        | `auth.accounts`      |
+| `session`        | `auth.sessions`      |
+| `verification`   | `auth.verifications` |
+| `organization`   | `auth.workspaces`    |
+| `member`         | `auth.memberships`   |
+| `invitation`     | `auth.invitations`   |
 
 Recommended field mapping for the organization plugin:
 
-| BetterAuth field | Canonical field |
-|---|---|
+| BetterAuth field       | Canonical field       |
+| ---------------------- | --------------------- |
 | `activeOrganizationId` | `active_workspace_id` |
-| `organizationId` | `workspace_id` |
-| `inviterId` | `inviter_user_id` |
+| `organizationId`       | `workspace_id`        |
+| `inviterId`            | `inviter_user_id`     |
 
 Validation checklist:
 

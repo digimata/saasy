@@ -1,24 +1,16 @@
-import {
-  boolean,
-  jsonb,
-  pgSchema,
-  text,
-  timestamp,
-  uniqueIndex,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgSchema, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
 // ----------------------------------
 // projects/saasy/packages/db/src/schema.ts
 //
-// export const authSchema        L24
-// export const users             L32
-// export const workspaces        L48
-// export const sessions          L64
-// export const accounts          L86
-// export const verifications    L119
-// export const memberships      L134
-// export const invitations      L163
+// export const authSchema        L16
+// export const users             L24
+// export const workspaces        L40
+// export const sessions          L56
+// export const accounts          L78
+// export const verifications    L111
+// export const memberships      L126
+// export const invitations      L155
 // ----------------------------------
 
 export const authSchema = pgSchema("auth");
@@ -105,9 +97,9 @@ export const accounts = authSchema.table(
   (table) => ({
     providerAccountUnique: uniqueIndex("auth_accounts_provider_account_unique").on(
       table.providerId,
-      table.accountId,
+      table.accountId
     ),
-  }),
+  })
 );
 
 /**
@@ -147,9 +139,9 @@ export const memberships = authSchema.table(
   (table) => ({
     userWorkspaceUnique: uniqueIndex("auth_memberships_user_workspace_unique").on(
       table.userId,
-      table.workspaceId,
+      table.workspaceId
     ),
-  }),
+  })
 );
 
 /**

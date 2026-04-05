@@ -4,8 +4,8 @@ outline: |
   • ADR-001 :: BetterAuth over Clerk/WorkOS      L11
     ◦ 1. Decision                                L19
     ◦ 2. Rationale                               L26
-    ◦ 3. Design Implications                     L43
-    ◦ 4. When to Revisit                         L51
+    ◦ 3. Design Implications                     L45
+    ◦ 4. When to Revisit                         L53
 ---
 
 # ADR-001 :: BetterAuth over Clerk/WorkOS
@@ -26,12 +26,14 @@ Last updated: `2026.04.04`
 ## 2. Rationale
 
 **Considered:**
+
 - **Clerk** — Polished hosted auth. Per-MAU pricing (\$0.02/MAU after 10K). No schema control — Clerk owns the user table. Vendor lock-in on a core identity primitive.
 - **WorkOS** — Enterprise SSO focus. Good for SAML/SCIM. Overkill for MVP. Expensive at scale.
 - **NextAuth / Auth.js** — Mature, widely used. But v5 has been in beta for a long time, adapter ecosystem is fragmented, and it doesn't have built-in org/workspace support.
 - **Roll our own** — Maximum control, maximum effort. Not justified when BetterAuth covers the same ground with less code.
 
 **Why BetterAuth:**
+
 - Open-source (MIT), 27k+ stars, active development.
 - First-class Drizzle adapter — maps directly to our schema.
 - Organization plugin handles workspace/member/invite flows out of the box if the schema mapping is explicit and clean.
