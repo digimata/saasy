@@ -1,53 +1,86 @@
-"use client"
+// --------------------------------------
+// projects/saasy/apps/web/components/auth/auth-form.tsx
+//
+// export type AuthFormClassNames     L54
+// base                               L55
+// button                             L56
+// checkbox                           L57
+// description                        L58
+// error                              L59
+// forgotPasswordLink                 L60
+// icon                               L61
+// input                              L62
+// label                              L63
+// otpInput                           L64
+// otpInputContainer                  L65
+// outlineButton                      L66
+// primaryButton                      L67
+// providerButton                     L68
+// qrCode                             L69
+// secondaryButton                    L70
+// export interface AuthFormProps     L73
+//   className                        L74
+//   classNames                       L75
+//   callbackURL                      L76
+//   isSubmitting                     L77
+//   localization                     L78
+//   pathname                         L79
+//   redirectTo                       L80
+//   view                             L81
+//   otpSeparators                    L82
+//   setIsSubmitting                  L83
+// export function AuthForm()        L103
+// --------------------------------------
 
-import { useContext, useEffect } from "react"
+"use client";
 
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { getViewByPath } from "@/lib/auth/utils"
-import type { AuthViewPath } from "@/lib/auth/view-paths"
-import type { AuthLocalization } from "@/lib/auth/localization/auth-localization"
-import { AuthCallback } from "./auth-callback"
-import { EmailOTPForm } from "./forms/email-otp-form"
-import { EmailVerificationForm } from "./forms/email-verification-form"
-import { ForgotPasswordForm } from "./forms/forgot-password-form"
-import { MagicLinkForm } from "./forms/magic-link-form"
-import { RecoverAccountForm } from "./forms/recover-account-form"
-import { ResetPasswordForm } from "./forms/reset-password-form"
-import { SignInForm } from "./forms/sign-in-form"
-import { SignUpForm } from "./forms/sign-up-form"
+import { useContext, useEffect } from "react";
+
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { getViewByPath } from "@/lib/auth/utils";
+import type { AuthViewPath } from "@/lib/auth/view-paths";
+import type { AuthLocalization } from "@/lib/auth/localization/auth-localization";
+import { AuthCallback } from "./auth-callback";
+import { EmailOTPForm } from "./forms/email-otp-form";
+import { EmailVerificationForm } from "./forms/email-verification-form";
+import { ForgotPasswordForm } from "./forms/forgot-password-form";
+import { MagicLinkForm } from "./forms/magic-link-form";
+import { ResetPasswordForm } from "./forms/reset-password-form";
+import { SignInForm } from "./forms/sign-in-form";
+import { SignUpForm } from "./forms/sign-up-form";
 // import { TwoFactorForm } from "./forms/two-factor-form" // TODO: add back when 2FA enabled
-import { SignOut } from "./sign-out"
+import { SignOut } from "./sign-out";
 
 export type AuthFormClassNames = {
-    base?: string
-    button?: string
-    checkbox?: string
-    description?: string
-    error?: string
-    forgotPasswordLink?: string
-    icon?: string
-    input?: string
-    label?: string
-    otpInput?: string
-    otpInputContainer?: string
-    outlineButton?: string
-    primaryButton?: string
-    providerButton?: string
-    qrCode?: string
-    secondaryButton?: string
-}
+  base?: string;
+  button?: string;
+  checkbox?: string;
+  description?: string;
+  error?: string;
+  forgotPasswordLink?: string;
+  icon?: string;
+  input?: string;
+  label?: string;
+  otpInput?: string;
+  otpInputContainer?: string;
+  outlineButton?: string;
+  primaryButton?: string;
+  providerButton?: string;
+  qrCode?: string;
+  secondaryButton?: string;
+};
 
 export interface AuthFormProps {
-    className?: string
-    classNames?: AuthFormClassNames
-    callbackURL?: string
-    isSubmitting?: boolean
-    localization?: Partial<AuthLocalization>
-    pathname?: string
-    redirectTo?: string
-    view?: AuthViewPath
-    otpSeparators?: 0 | 1 | 2
-    setIsSubmitting?: (isSubmitting: boolean) => void
+  className?: string;
+  classNames?: AuthFormClassNames;
+  callbackURL?: string;
+  isSubmitting?: boolean;
+  localization?: Partial<AuthLocalization>;
+  pathname?: string;
+  redirectTo?: string;
+  view?: AuthViewPath;
+  otpSeparators?: 0 | 1 | 2;
+  setIsSubmitting?: (isSubmitting: boolean) => void;
 }
 
 /**
@@ -68,235 +101,205 @@ export interface AuthFormProps {
  * @returns The React element for the selected authentication view, or `null` if no suitable view is available.
  */
 export function AuthForm({
-    className,
-    classNames,
-    callbackURL,
-    isSubmitting,
-    localization,
-    pathname,
-    redirectTo,
-    view,
-    otpSeparators = 0,
-    setIsSubmitting
+  className,
+  classNames = {},
+  callbackURL,
+  isSubmitting,
+  localization = {},
+  pathname,
+  redirectTo,
+  view,
+  otpSeparators = 0,
+  setIsSubmitting,
 }: AuthFormProps) {
-    const {
-        basePath,
-        credentials,
-        localization: contextLocalization,
-        magicLink,
-        emailOTP,
-        signUp,
-        twoFactor: twoFactorEnabled,
-        viewPaths,
-        replace
-    } = useContext(AuthUIContext)
+  const {
+    basePath,
+    credentials,
+    localization: contextLocalization,
+    magicLink,
+    emailOTP,
+    signUp,
+    twoFactor: twoFactorEnabled,
+    viewPaths,
+    replace,
+  } = useContext(AuthUIContext);
 
-    const signUpEnabled = !!signUp
+  const signUpEnabled = !!signUp;
 
-    localization = { ...contextLocalization, ...localization }
+  localization = { ...contextLocalization, ...localization };
+  const mergedLocalization = localization ?? {};
 
-    useEffect(() => {
-        if (pathname && !getViewByPath(viewPaths, pathname)) {
-            console.error(`Invalid auth view: ${pathname}`)
-            replace(`${basePath}/${viewPaths.SIGN_IN}${window.location.search}`)
-        }
-    }, [pathname, viewPaths, basePath, replace])
+  useEffect(() => {
+    if (pathname && !getViewByPath(viewPaths, pathname)) {
+      console.error(`Invalid auth view: ${pathname}`);
+      replace(`${basePath}/${viewPaths.SIGN_IN}${window.location.search}`);
+    }
+  }, [pathname, viewPaths, basePath, replace]);
 
-    view =
-        view ||
-        (getViewByPath(viewPaths, pathname) as AuthViewPath) ||
-        "SIGN_IN"
+  view = view || (getViewByPath(viewPaths, pathname) as AuthViewPath) || "SIGN_IN";
 
-    // Redirect to appropriate view based on enabled features
-    useEffect(() => {
-        let isInvalidView = false
+  // Redirect to appropriate view based on enabled features
+  useEffect(() => {
+    let isInvalidView = false;
 
-        if (
-            view === "MAGIC_LINK" &&
-            (!magicLink || (!credentials && !emailOTP))
-        ) {
-            isInvalidView = true
-        }
-
-        if (
-            view === "EMAIL_OTP" &&
-            (!emailOTP || (!credentials && !magicLink))
-        ) {
-            isInvalidView = true
-        }
-
-        if (view === "SIGN_UP" && !signUpEnabled) {
-            isInvalidView = true
-        }
-
-        if (
-            !credentials &&
-            [
-                "SIGN_UP",
-                "FORGOT_PASSWORD",
-                "RESET_PASSWORD",
-                "TWO_FACTOR",
-                "RECOVER_ACCOUNT"
-            ].includes(view)
-        ) {
-            isInvalidView = true
-        }
-
-        if (
-            ["TWO_FACTOR", "RECOVER_ACCOUNT"].includes(view) &&
-            !twoFactorEnabled
-        ) {
-            isInvalidView = true
-        }
-
-        if (isInvalidView) {
-            replace(`${basePath}/${viewPaths.SIGN_IN}${window.location.search}`)
-        }
-    }, [
-        basePath,
-        view,
-        viewPaths,
-        credentials,
-        replace,
-        emailOTP,
-        signUpEnabled,
-        magicLink,
-        twoFactorEnabled
-    ])
-
-    if (view === "SIGN_OUT") return <SignOut redirectTo={redirectTo} />
-    if (view === "CALLBACK") return <AuthCallback redirectTo={redirectTo} />
-
-    if (view === "SIGN_IN") {
-        return credentials ? (
-            <SignInForm
-                className={className}
-                classNames={classNames}
-                localization={localization}
-                redirectTo={redirectTo}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-                callbackURL={callbackURL}
-            />
-        ) : magicLink ? (
-            <MagicLinkForm
-                className={className}
-                classNames={classNames}
-                callbackURL={callbackURL}
-                localization={localization}
-                redirectTo={redirectTo}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-            />
-        ) : emailOTP ? (
-            <EmailOTPForm
-                className={className}
-                classNames={classNames}
-                callbackURL={callbackURL}
-                localization={localization}
-                redirectTo={redirectTo}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-            />
-        ) : null
+    if (view === "MAGIC_LINK" && (!magicLink || (!credentials && !emailOTP))) {
+      isInvalidView = true;
     }
 
-    // TODO: add back when 2FA enabled
-    // if (view === "TWO_FACTOR") {
-    //     return <TwoFactorForm ... />
-    // }
-
-    if (view === "RECOVER_ACCOUNT") {
-        return (
-            <RecoverAccountForm
-                className={className}
-                classNames={classNames}
-                localization={localization}
-                redirectTo={redirectTo}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-            />
-        )
+    if (view === "EMAIL_OTP" && (!emailOTP || (!credentials && !magicLink))) {
+      isInvalidView = true;
     }
 
-    if (view === "MAGIC_LINK") {
-        return (
-            <MagicLinkForm
-                className={className}
-                classNames={classNames}
-                callbackURL={callbackURL}
-                localization={localization}
-                redirectTo={redirectTo}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-            />
-        )
+    if (view === "SIGN_UP" && !signUpEnabled) {
+      isInvalidView = true;
     }
 
-    if (view === "EMAIL_OTP") {
-        return (
-            <EmailOTPForm
-                className={className}
-                classNames={classNames}
-                callbackURL={callbackURL}
-                localization={localization}
-                redirectTo={redirectTo}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-            />
-        )
+    if (
+      !credentials &&
+      ["SIGN_UP", "FORGOT_PASSWORD", "RESET_PASSWORD", "TWO_FACTOR"].includes(view)
+    ) {
+      isInvalidView = true;
     }
 
-    if (view === "EMAIL_VERIFICATION") {
-        return (
-            <EmailVerificationForm
-                className={className}
-                classNames={classNames}
-                callbackURL={callbackURL}
-                localization={localization}
-                otpSeparators={otpSeparators}
-                redirectTo={redirectTo}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-            />
-        )
+    if (["TWO_FACTOR"].includes(view) && !twoFactorEnabled) {
+      isInvalidView = true;
     }
 
-    if (view === "FORGOT_PASSWORD") {
-        return (
-            <ForgotPasswordForm
-                className={className}
-                classNames={classNames}
-                localization={localization}
-                isSubmitting={isSubmitting}
-                setIsSubmitting={setIsSubmitting}
-            />
-        )
+    if (isInvalidView) {
+      replace(`${basePath}/${viewPaths.SIGN_IN}${window.location.search}`);
     }
+  }, [
+    basePath,
+    view,
+    viewPaths,
+    credentials,
+    replace,
+    emailOTP,
+    signUpEnabled,
+    magicLink,
+    twoFactorEnabled,
+  ]);
 
-    if (view === "RESET_PASSWORD") {
-        return (
-            <ResetPasswordForm
-                className={className}
-                classNames={classNames}
-                localization={localization}
-            />
-        )
-    }
+  if (view === "SIGN_OUT") return <SignOut redirectTo={redirectTo} />;
+  if (view === "CALLBACK") return <AuthCallback redirectTo={redirectTo} />;
 
-    if (view === "SIGN_UP") {
-        return (
-            signUpEnabled && (
-                <SignUpForm
-                    className={className}
-                    classNames={classNames}
-                    callbackURL={callbackURL}
-                    localization={localization}
-                    redirectTo={redirectTo}
-                    isSubmitting={isSubmitting}
-                    setIsSubmitting={setIsSubmitting}
-                />
-            )
-        )
-    }
+  if (view === "SIGN_IN") {
+    return credentials ? (
+      <SignInForm
+        className={className}
+        classNames={classNames ?? {}}
+        localization={mergedLocalization}
+        redirectTo={redirectTo}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+        callbackURL={callbackURL}
+      />
+    ) : magicLink ? (
+      <MagicLinkForm
+        className={className}
+        classNames={classNames ?? {}}
+        callbackURL={callbackURL}
+        localization={mergedLocalization}
+        redirectTo={redirectTo}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    ) : emailOTP ? (
+      <EmailOTPForm
+        className={className}
+        classNames={classNames ?? {}}
+        callbackURL={callbackURL}
+        localization={mergedLocalization}
+        redirectTo={redirectTo}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    ) : null;
+  }
+
+  // TODO: add back when 2FA enabled
+  // if (view === "TWO_FACTOR") {
+  //     return <TwoFactorForm ... />
+  // }
+
+  if (view === "MAGIC_LINK") {
+    return (
+      <MagicLinkForm
+        className={className}
+        classNames={classNames ?? {}}
+        callbackURL={callbackURL}
+        localization={mergedLocalization}
+        redirectTo={redirectTo}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    );
+  }
+
+  if (view === "EMAIL_OTP") {
+    return (
+      <EmailOTPForm
+        className={className}
+        classNames={classNames}
+        callbackURL={callbackURL}
+        localization={localization}
+        redirectTo={redirectTo}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    );
+  }
+
+  if (view === "EMAIL_VERIFICATION") {
+    return (
+      <EmailVerificationForm
+        className={className}
+        classNames={classNames ?? {}}
+        callbackURL={callbackURL}
+        localization={mergedLocalization}
+        otpSeparators={otpSeparators}
+        redirectTo={redirectTo}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    );
+  }
+
+  if (view === "FORGOT_PASSWORD") {
+    return (
+      <ForgotPasswordForm
+        className={className}
+        classNames={classNames ?? {}}
+        localization={mergedLocalization}
+        isSubmitting={isSubmitting}
+        setIsSubmitting={setIsSubmitting}
+      />
+    );
+  }
+
+  if (view === "RESET_PASSWORD") {
+    return (
+      <ResetPasswordForm
+        className={className}
+        classNames={classNames ?? {}}
+        localization={mergedLocalization}
+      />
+    );
+  }
+
+  if (view === "SIGN_UP") {
+    return (
+      signUpEnabled && (
+        <SignUpForm
+          className={className}
+          classNames={classNames ?? {}}
+          callbackURL={callbackURL}
+          localization={mergedLocalization}
+          redirectTo={redirectTo}
+          isSubmitting={isSubmitting}
+          setIsSubmitting={setIsSubmitting}
+        />
+      )
+    );
+  }
 }
