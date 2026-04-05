@@ -1,4 +1,11 @@
-# Guard flows — middleware redirects, auth boundaries
+id: FL-003
+title: Guard flows
+covers: [middleware, auth-redirect, unauth-redirect]
+depends_on: [FL-001]
+last_run:
+  commit: e52fca7
+  result: pass
+
 # Verifies that unauthenticated users can't reach protected pages
 # and authenticated users get redirected away from auth pages.
 

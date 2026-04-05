@@ -1,4 +1,10 @@
-# Auth flows — registration, login, sign-out
+id: FL-001
+title: Auth flows
+covers: [/sign-in, /sign-up, /setup, sign-out]
+last_run:
+  commit: e52fca7
+  result: pass
+
 # Covers the core identity paths every user hits.
 
 base_url: http://localhost:3000

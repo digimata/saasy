@@ -1,4 +1,10 @@
-# Dashboard flows — navigation, page rendering
+id: FL-002
+title: Dashboard flows
+covers: [/, /settings, /members, /billing, sidebar]
+last_run:
+  commit: e52fca7
+  result: pass
+
 # Assumes authenticated user with active workspace.
 
 base_url: http://localhost:3000
