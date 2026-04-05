@@ -1,34 +1,52 @@
-"use client"
+// ---------------------------------------------
+// projects/saasy/apps/web/components/auth/user-avatar.tsx
+//
+// export interface UserAvatarClassNames     L32
+//   base                                    L33
+//   image                                   L34
+//   fallback                                L35
+//   fallbackIcon                            L36
+//   skeleton                                L37
+// export interface UserAvatarProps          L40
+//   classNames                              L41
+//   isPending                               L42
+//   size                                    L43
+//   user                                    L44
+//   localization                            L49
+// export function UserAvatar()              L60
+// const firstTwoCharacters                 L144
+// ---------------------------------------------
 
-import { UserRoundIcon } from "lucide-react"
-import { type ComponentProps, useContext } from "react"
+"use client";
 
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { getGravatarUrl } from "@/lib/auth/gravatar-utils"
-import { cn } from "@/lib/auth/utils"
-import type { AuthLocalization } from "@/lib/auth/localization/auth-localization"
-import type { Profile } from "@/lib/auth/types/profile"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Skeleton } from "@/components/ui/skeleton"
+import { UserRoundIcon } from "lucide-react";
+import { type ComponentProps, useContext } from "react";
+
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { cn } from "@/lib/auth/utils";
+import type { AuthLocalization } from "@/lib/auth/localization/auth-localization";
+import type { Profile } from "@/lib/auth/types/profile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export interface UserAvatarClassNames {
-    base?: string
-    image?: string
-    fallback?: string
-    fallbackIcon?: string
-    skeleton?: string
+  base?: string;
+  image?: string;
+  fallback?: string;
+  fallbackIcon?: string;
+  skeleton?: string;
 }
 
 export interface UserAvatarProps {
-    classNames?: UserAvatarClassNames
-    isPending?: boolean
-    size?: "sm" | "default" | "lg" | "xl" | null
-    user?: Profile | null
-    /**
-     * @default authLocalization
-     * @remarks `AuthLocalization`
-     */
-    localization?: Partial<AuthLocalization>
+  classNames?: UserAvatarClassNames;
+  isPending?: boolean;
+  size?: "sm" | "default" | "lg" | "xl" | null;
+  user?: Profile | null;
+  /**
+   * @default authLocalization
+   * @remarks `AuthLocalization`
+   */
+  localization?: Partial<AuthLocalization>;
 }
 
 /**
@@ -40,107 +58,87 @@ export interface UserAvatarProps {
  * - Falls back to a generic user icon when neither image nor name is available
  */
 export function UserAvatar({
-    className,
-    classNames,
-    isPending,
-    size,
-    user,
-    localization: propLocalization,
-    ...props
+  className,
+  classNames,
+  isPending,
+  size,
+  user,
+  localization: propLocalization,
+  ...props
 }: UserAvatarProps & ComponentProps<typeof Avatar>) {
-    const {
-        localization: contextLocalization,
-        gravatar,
-        avatar
-    } = useContext(AuthUIContext)
+  const { localization: contextLocalization, gravatar, avatar } = useContext(AuthUIContext);
 
-    const localization = { ...contextLocalization, ...propLocalization }
+  const localization = { ...contextLocalization, ...propLocalization };
 
-    const name =
-        user?.displayName ||
-        user?.name ||
-        user?.fullName ||
-        user?.firstName ||
-        user?.displayUsername ||
-        user?.username ||
-        user?.email
-    const userImage = user?.image || user?.avatar || user?.avatarUrl
+  const name =
+    user?.displayName ||
+    user?.name ||
+    user?.fullName ||
+    user?.firstName ||
+    user?.displayUsername ||
+    user?.username ||
+    user?.email;
+  const userImage = user?.image || user?.avatar || user?.avatarUrl;
 
-    // Calculate gravatar URL synchronously
-    const gravatarUrl =
-        gravatar && user?.email
-            ? getGravatarUrl(
-                  user.email,
-                  gravatar === true ? undefined : gravatar
-              )
-            : null
+  const src = userImage || null;
 
-    const src = gravatar ? gravatarUrl : userImage
-
-    if (isPending) {
-        return (
-            <Skeleton
-                className={cn(
-                    "shrink-0 rounded-full",
-                    size === "sm"
-                        ? "size-6"
-                        : size === "lg"
-                          ? "size-10"
-                          : (size as string) === "xl"
-                            ? "size-12"
-                            : "size-8",
-                    className,
-                    classNames?.base,
-                    classNames?.skeleton
-                )}
-            />
-        )
-    }
-
+  if (isPending) {
     return (
-        <Avatar
-            className={cn(
-                "bg-muted",
-                size === "sm"
-                    ? "size-6"
-                    : size === "lg"
-                      ? "size-10"
-                      : (size as string) === "xl"
-                        ? "size-12"
-                        : "size-8",
-                className,
-                classNames?.base
-            )}
-            {...props}
-        >
-            {avatar?.Image ? (
-                <avatar.Image
-                    alt={name || localization?.USER}
-                    className={classNames?.image}
-                    src={src || ""}
-                />
-            ) : (
-                <AvatarImage
-                    alt={name || localization?.USER}
-                    className={classNames?.image}
-                    src={src || undefined}
-                />
-            )}
+      <Skeleton
+        className={cn(
+          "shrink-0 rounded-full",
+          size === "sm"
+            ? "size-6"
+            : size === "lg"
+              ? "size-10"
+              : (size as string) === "xl"
+                ? "size-12"
+                : "size-8",
+          className,
+          classNames?.base,
+          classNames?.skeleton
+        )}
+      />
+    );
+  }
 
-            <AvatarFallback
-                className={cn(
-                    "text-foreground uppercase",
-                    classNames?.fallback
-                )}
-            >
-                {firstTwoCharacters(name) || (
-                    <UserRoundIcon
-                        className={cn("size-[50%]", classNames?.fallbackIcon)}
-                    />
-                )}
-            </AvatarFallback>
-        </Avatar>
-    )
+  return (
+    <Avatar
+      className={cn(
+        "bg-muted",
+        size === "sm"
+          ? "size-6"
+          : size === "lg"
+            ? "size-10"
+            : (size as string) === "xl"
+              ? "size-12"
+              : "size-8",
+        className,
+        classNames?.base
+      )}
+      {...props}
+    >
+      {avatar?.Image ? (
+        <avatar.Image
+          alt={name || localization?.USER}
+          className={classNames?.image}
+          src={src || ""}
+        />
+      ) : (
+        <AvatarImage
+          alt={name || localization?.USER}
+          className={classNames?.image}
+          src={src || undefined}
+        />
+      )}
+
+      <AvatarFallback className={cn("text-foreground uppercase", classNames?.fallback)}>
+        {firstTwoCharacters(name) || (
+          <UserRoundIcon className={cn("size-[50%]", classNames?.fallbackIcon)} />
+        )}
+      </AvatarFallback>
+    </Avatar>
+  );
 }
 
-const firstTwoCharacters = (name?: string | null) => name?.slice(0, 2)
+const firstTwoCharacters = (name?: string | null) => name?.slice(0, 2);

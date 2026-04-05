@@ -1,7 +1,13 @@
-import * as React from "react"
-import { Input as InputPrimitive } from "@base-ui/react/input"
+import * as React from "react";
+import { Input as InputPrimitive } from "@base-ui/react/input";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+
+// -----------------------
+// projects/saasy/apps/web/components/ui/input.tsx
+//
+// function Input()    L12
+// -----------------------
 
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
@@ -14,7 +20,7 @@ function Input({ className, type, ...props }: React.ComponentProps<"input">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Input }
+export { Input };

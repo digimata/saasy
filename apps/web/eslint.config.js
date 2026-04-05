@@ -10,6 +10,9 @@ import turboPlugin from "eslint-plugin-turbo";
 import onlyWarn from "eslint-plugin-only-warn";
 
 /** @type {import("eslint").Linter.Config[]} */
+// projects/saasy/apps/web/eslint.config.js
+//
+
 export default [
   js.configs.recommended,
   eslintConfigPrettier,

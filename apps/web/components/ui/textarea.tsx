@@ -1,6 +1,12 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
+
+// --------------------------
+// projects/saasy/apps/web/components/ui/textarea.tsx
+//
+// function Textarea()    L11
+// --------------------------
 
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
@@ -12,7 +18,7 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Textarea }
+export { Textarea };

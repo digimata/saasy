@@ -1,21 +1,36 @@
-"use client"
+// ---------------------------------------------
+// projects/saasy/apps/web/components/auth/organization/user-invitations-card.tsx
+//
+// export function UserInvitationsCard()     L45
+// function UserInvitationRow()             L112
+// classNames                               L117
+// invitation                               L118
+// id                                       L119
+// email                                    L120
+// role                                     L121
+// status                                   L122
+// expiresAt                                L123
+// onChanged                                L125
+// ---------------------------------------------
 
-import { CheckIcon, EllipsisIcon, Loader2, XIcon } from "lucide-react"
-import { useContext, useMemo, useState } from "react"
-import { useLang } from "@/hooks/auth/use-lang"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { cn, getLocalizedError } from "@/lib/auth/utils"
-import type { SettingsCardProps } from "@/components/auth/settings/shared/settings-card"
-import { SettingsCard } from "@/components/auth/settings/shared/settings-card"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+"use client";
+
+import { CheckIcon, EllipsisIcon, Loader2, XIcon } from "lucide-react";
+import { useContext, useMemo, useState } from "react";
+import { useLang } from "@/hooks/auth/use-lang";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { cn, getLocalizedError } from "@/lib/auth/utils";
+import type { SettingsCardProps } from "@/components/auth/settings/shared/settings-card";
+import { SettingsCard } from "@/components/auth/settings/shared/settings-card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { UserAvatar } from "@/components/auth/user-avatar"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { UserAvatar } from "@/components/auth/user-avatar";
 
 /**
  * Render a settings card that lists all pending user invitations.
@@ -28,65 +43,62 @@ import { UserAvatar } from "@/components/auth/user-avatar"
  * @returns The SettingsCard element containing a row for each pending invitation, or `null` when none exist
  */
 export function UserInvitationsCard({
-    className,
-    classNames,
-    localization: localizationProp,
-    ...props
+  className,
+  classNames,
+  localization: localizationProp,
+  ...props
 }: SettingsCardProps) {
-    const {
-        hooks: { useListUserInvitations, useListOrganizations },
-        localization: contextLocalization
-    } = useContext(AuthUIContext)
+  const {
+    hooks: { useListUserInvitations, useListOrganizations },
+    localization: contextLocalization,
+  } = useContext(AuthUIContext);
 
-    const localization = useMemo(
-        () => ({ ...contextLocalization, ...localizationProp }),
-        [contextLocalization, localizationProp]
-    )
+  const localization = useMemo(
+    () => ({ ...contextLocalization, ...localizationProp }),
+    [contextLocalization, localizationProp]
+  );
 
-    const { data: invitations, refetch: refetchInvitations } =
-        useListUserInvitations()
-    const { refetch: refetchOrganizations } = useListOrganizations()
+  const { data: invitations, refetch: refetchInvitations } = useListUserInvitations();
+  const { refetch: refetchOrganizations } = useListOrganizations();
 
-    const handleRefresh = async () => {
-        await refetchInvitations?.()
-        await refetchOrganizations?.()
-    }
+  const handleRefresh = async () => {
+    await refetchInvitations?.();
+    await refetchOrganizations?.();
+  };
 
-    const pendingInvitations = invitations?.filter(
-        (invitation) => invitation.status === "pending"
-    )
+  const pendingInvitations = invitations?.filter((invitation) => invitation.status === "pending");
 
-    if (!pendingInvitations?.length) return null
+  if (!pendingInvitations?.length) return null;
 
-    return (
-        <SettingsCard
-            className={className}
+  return (
+    <SettingsCard
+      className={className}
+      classNames={classNames}
+      title={localization.PENDING_INVITATIONS}
+      description={
+        localization.PENDING_USER_INVITATIONS_DESCRIPTION ||
+        localization.PENDING_INVITATIONS_DESCRIPTION
+      }
+      {...props}
+    >
+      <CardContent className={cn("grid gap-4", classNames?.content)}>
+        {pendingInvitations.map((invitation) => (
+          <UserInvitationRow
+            key={invitation.id}
             classNames={classNames}
-            title={localization.PENDING_INVITATIONS}
-            description={
-                localization.PENDING_USER_INVITATIONS_DESCRIPTION ||
-                localization.PENDING_INVITATIONS_DESCRIPTION
-            }
-            {...props}
-        >
-            <CardContent className={cn("grid gap-4", classNames?.content)}>
-                {pendingInvitations.map((invitation) => (
-                    <UserInvitationRow
-                        key={invitation.id}
-                        classNames={classNames}
-                        invitation={{
-                            id: invitation.id,
-                            email: invitation.email,
-                            role: invitation.role,
-                            status: invitation.status,
-                            expiresAt: invitation.expiresAt
-                        }}
-                        onChanged={handleRefresh}
-                    />
-                ))}
-            </CardContent>
-        </SettingsCard>
-    )
+            invitation={{
+              id: invitation.id,
+              email: invitation.email,
+              role: invitation.role,
+              status: invitation.status,
+              expiresAt: invitation.expiresAt,
+            }}
+            onChanged={handleRefresh}
+          />
+        ))}
+      </CardContent>
+    </SettingsCard>
+  );
 }
 
 /**
@@ -98,169 +110,153 @@ export function UserInvitationsCard({
  * @returns The JSX element representing the invitation row.
  */
 function UserInvitationRow({
-    classNames,
-    invitation,
-    onChanged
+  classNames,
+  invitation,
+  onChanged,
 }: {
-    classNames?: SettingsCardProps["classNames"]
-    invitation: {
-        id: string
-        email: string
-        role: string
-        status: string
-        expiresAt: Date
-    }
-    onChanged?: () => unknown
+  classNames?: SettingsCardProps["classNames"];
+  invitation: {
+    id: string;
+    email: string;
+    role: string;
+    status: string;
+    expiresAt: Date;
+  };
+  onChanged?: () => unknown;
 }) {
-    const {
-        authClient,
-        organization: organizationOptions,
-        localization: contextLocalization,
-        toast,
-        localizeErrors
-    } = useContext(AuthUIContext)
+  const {
+    authClient,
+    organization: organizationOptions,
+    localization: contextLocalization,
+    toast,
+    localizeErrors,
+  } = useContext(AuthUIContext);
 
-    const localization = contextLocalization
-    const { lang } = useLang()
+  const localization = contextLocalization;
+  const { lang } = useLang();
 
-    const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
-    const builtInRoles = [
-        { role: "owner", label: localization.OWNER },
-        { role: "admin", label: localization.ADMIN },
-        { role: "member", label: localization.MEMBER }
-    ]
+  const builtInRoles = [
+    { role: "owner", label: localization.OWNER },
+    { role: "admin", label: localization.ADMIN },
+    { role: "member", label: localization.MEMBER },
+  ];
 
-    const roles = [...builtInRoles, ...(organizationOptions?.customRoles || [])]
-    const role = roles.find((r) => r.role === invitation.role)
+  const roles = [...builtInRoles, ...(organizationOptions?.customRoles || [])];
+  const role = roles.find((r) => r.role === invitation.role);
 
-    const handleAccept = async () => {
-        setIsLoading(true)
+  const handleAccept = async () => {
+    setIsLoading(true);
 
-        try {
-            await authClient.organization.acceptInvitation({
-                invitationId: invitation.id,
-                fetchOptions: { throw: true }
-            })
+    try {
+      await authClient.organization.acceptInvitation({
+        invitationId: invitation.id,
+        fetchOptions: { throw: true },
+      });
 
-            await onChanged?.()
+      await onChanged?.();
 
-            toast({
-                variant: "success",
-                message: localization.INVITATION_ACCEPTED
-            })
-        } catch (error) {
-            toast({
-                variant: "error",
-                message: getLocalizedError({
-                    error,
-                    localization,
-                    localizeErrors
-                })
-            })
-        }
-
-        setIsLoading(false)
+      toast({
+        variant: "success",
+        message: localization.INVITATION_ACCEPTED,
+      });
+    } catch (error) {
+      toast({
+        variant: "error",
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors,
+        }),
+      });
     }
 
-    const handleReject = async () => {
-        setIsLoading(true)
+    setIsLoading(false);
+  };
 
-        try {
-            await authClient.organization.rejectInvitation({
-                invitationId: invitation.id,
-                fetchOptions: { throw: true }
-            })
+  const handleReject = async () => {
+    setIsLoading(true);
 
-            await onChanged?.()
+    try {
+      await authClient.organization.rejectInvitation({
+        invitationId: invitation.id,
+        fetchOptions: { throw: true },
+      });
 
-            toast({
-                variant: "success",
-                message: localization.INVITATION_REJECTED
-            })
-        } catch (error) {
-            toast({
-                variant: "error",
-                message: getLocalizedError({
-                    error,
-                    localization,
-                    localizeErrors
-                })
-            })
-        }
+      await onChanged?.();
 
-        setIsLoading(false)
+      toast({
+        variant: "success",
+        message: localization.INVITATION_REJECTED,
+      });
+    } catch (error) {
+      toast({
+        variant: "error",
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors,
+        }),
+      });
     }
 
-    return (
-        <Card className={cn("flex-row items-center p-4", classNames?.cell)}>
-            <div className="flex flex-1 items-center gap-2">
-                <UserAvatar
-                    className="my-0.5"
-                    user={{ email: invitation.email }}
-                    localization={localization}
-                />
+    setIsLoading(false);
+  };
 
-                <div className="grid flex-1 text-left leading-tight">
-                    <span className="truncate font-semibold text-sm">
-                        {invitation.email}
-                    </span>
+  return (
+    <Card className={cn("flex-row items-center p-4", classNames?.cell)}>
+      <div className="flex flex-1 items-center gap-2">
+        <UserAvatar
+          className="my-0.5"
+          user={{ email: invitation.email }}
+          localization={localization}
+        />
 
-                    <span className="truncate text-muted-foreground text-xs">
-                        {localization.EXPIRES}{" "}
-                        {invitation.expiresAt.toLocaleDateString(lang ?? "en")}
-                    </span>
-                </div>
-            </div>
+        <div className="grid flex-1 text-left leading-tight">
+          <span className="truncate font-semibold text-sm">{invitation.email}</span>
 
-            <span className="truncate text-sm opacity-70">{role?.label}</span>
+          <span className="truncate text-muted-foreground text-xs">
+            {localization.EXPIRES} {invitation.expiresAt.toLocaleDateString(lang ?? "en")}
+          </span>
+        </div>
+      </div>
 
-            <div className="flex items-center gap-2">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            className={cn(
-                                "relative ms-auto",
-                                classNames?.button,
-                                classNames?.outlineButton
-                            )}
-                            disabled={isLoading}
-                            size="icon"
-                            type="button"
-                            variant="outline"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="animate-spin" />
-                            ) : (
-                                <EllipsisIcon className={classNames?.icon} />
-                            )}
-                        </Button>
-                    </DropdownMenuTrigger>
+      <span className="truncate text-sm opacity-70">{role?.label}</span>
 
-                    <DropdownMenuContent
-                        onCloseAutoFocus={(e) => e.preventDefault()}
-                    >
-                        <DropdownMenuItem
-                            onClick={handleAccept}
-                            disabled={isLoading}
-                        >
-                            <CheckIcon className={classNames?.icon} />
+      <div className="flex items-center gap-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              className={cn("relative ms-auto", classNames?.button, classNames?.outlineButton)}
+              disabled={isLoading}
+              size="icon"
+              type="button"
+              variant="outline"
+            >
+              {isLoading ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <EllipsisIcon className={classNames?.icon} />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
 
-                            {localization.ACCEPT}
-                        </DropdownMenuItem>
+          <DropdownMenuContent onCloseAutoFocus={(e) => e.preventDefault()}>
+            <DropdownMenuItem onClick={handleAccept} disabled={isLoading}>
+              <CheckIcon className={classNames?.icon} />
 
-                        <DropdownMenuItem
-                            onClick={handleReject}
-                            disabled={isLoading}
-                            variant="destructive"
-                        >
-                            <XIcon className={classNames?.icon} />
+              {localization.ACCEPT}
+            </DropdownMenuItem>
 
-                            {localization.REJECT}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-        </Card>
-    )
+            <DropdownMenuItem onClick={handleReject} disabled={isLoading} variant="destructive">
+              <XIcon className={classNames?.icon} />
+
+              {localization.REJECT}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </Card>
+  );
 }

@@ -1,160 +1,156 @@
-"use client"
+// ---------------------------------------------
+// projects/saasy/apps/web/components/auth/organization/organization-cell.tsx
+//
+// export interface OrganizationCellProps    L33
+//   className                               L34
+//   classNames                              L35
+//   organization                            L36
+//   localization                            L37
+// export function OrganizationCell()        L40
+// ---------------------------------------------
 
-import type { Organization } from "better-auth/plugins/organization"
-import { EllipsisIcon, Loader2, LogOutIcon, SettingsIcon } from "lucide-react"
-import { useCallback, useContext, useMemo, useState } from "react"
+"use client";
 
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { cn, getLocalizedError } from "@/lib/auth/utils"
-import type { AuthLocalization } from "@/lib/auth/localization/auth-localization"
-import type { SettingsCardClassNames } from "@/components/auth/settings/shared/settings-card"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import type { Organization } from "better-auth/plugins/organization";
+import { EllipsisIcon, Loader2, LogOutIcon, SettingsIcon } from "lucide-react";
+import { useCallback, useContext, useMemo, useState } from "react";
+
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { cn, getLocalizedError } from "@/lib/auth/utils";
+import type { AuthLocalization } from "@/lib/auth/localization/auth-localization";
+import type { SettingsCardClassNames } from "@/components/auth/settings/shared/settings-card";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { LeaveOrganizationDialog } from "./leave-organization-dialog"
-import { OrganizationCellView } from "./organization-cell-view"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { LeaveOrganizationDialog } from "./leave-organization-dialog";
+import { OrganizationCellView } from "./organization-cell-view";
 
 export interface OrganizationCellProps {
-    className?: string
-    classNames?: SettingsCardClassNames
-    organization: Organization
-    localization?: AuthLocalization
+  className?: string;
+  classNames?: SettingsCardClassNames;
+  organization: Organization;
+  localization?: AuthLocalization;
 }
 
 export function OrganizationCell({
-    className,
-    classNames,
-    organization,
-    localization: localizationProp
+  className,
+  classNames,
+  organization,
+  localization: localizationProp,
 }: OrganizationCellProps) {
-    const {
-        authClient,
-        localization: contextLocalization,
-        organization: organizationOptions,
-        navigate,
-        toast,
-        localizeErrors
-    } = useContext(AuthUIContext)
+  const {
+    authClient,
+    localization: contextLocalization,
+    organization: organizationOptions,
+    navigate,
+    toast,
+    localizeErrors,
+  } = useContext(AuthUIContext);
 
-    const localization = useMemo(
-        () => ({ ...contextLocalization, ...localizationProp }),
-        [contextLocalization, localizationProp]
-    )
+  const localization = useMemo(
+    () => ({ ...contextLocalization, ...localizationProp }),
+    [contextLocalization, localizationProp]
+  );
 
-    const { pathMode } = organizationOptions || {}
+  const { pathMode } = organizationOptions || {};
 
-    const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
-    const [isManagingOrganization, setIsManagingOrganization] = useState(false)
+  const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false);
+  const [isManagingOrganization, setIsManagingOrganization] = useState(false);
 
-    const handleManageOrganization = useCallback(async () => {
-        setIsManagingOrganization(true)
+  const handleManageOrganization = useCallback(async () => {
+    setIsManagingOrganization(true);
 
-        if (pathMode === "slug") {
-            navigate(
-                `${organizationOptions?.basePath}/${organization.slug}/${organizationOptions?.viewPaths.SETTINGS}`
-            )
+    if (pathMode === "slug") {
+      navigate(
+        `${organizationOptions?.basePath}/${organization.slug}/${organizationOptions?.viewPaths.SETTINGS}`
+      );
 
-            return
-        }
+      return;
+    }
 
-        try {
-            await authClient.organization.setActive({
-                organizationId: organization.id,
-                fetchOptions: {
-                    throw: true
-                }
-            })
+    try {
+      await authClient.organization.setActive({
+        organizationId: organization.id,
+        fetchOptions: {
+          throw: true,
+        },
+      });
 
-            navigate(
-                `${organizationOptions?.basePath}/${organizationOptions?.viewPaths?.SETTINGS}`
-            )
-        } catch (error) {
-            toast({
-                variant: "error",
-                message: getLocalizedError({
-                    error,
-                    localization,
-                    localizeErrors
-                })
-            })
+      navigate(`${organizationOptions?.basePath}/${organizationOptions?.viewPaths?.SETTINGS}`);
+    } catch (error) {
+      toast({
+        variant: "error",
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors,
+        }),
+      });
 
-            setIsManagingOrganization(false)
-        }
-    }, [
-        authClient,
-        organization.id,
-        organizationOptions?.basePath,
-        organizationOptions?.viewPaths?.SETTINGS,
-        organization.slug,
-        pathMode,
-        navigate,
-        toast,
-        localization,
-        localizeErrors
-    ])
+      setIsManagingOrganization(false);
+    }
+  }, [
+    authClient,
+    organization.id,
+    organizationOptions?.basePath,
+    organizationOptions?.viewPaths?.SETTINGS,
+    organization.slug,
+    pathMode,
+    navigate,
+    toast,
+    localization,
+    localizeErrors,
+  ]);
 
-    return (
-        <>
-            <Card className={cn("flex-row p-4", className, classNames?.cell)}>
-                <OrganizationCellView
-                    organization={organization}
-                    localization={localization}
-                />
+  return (
+    <>
+      <Card className={cn("flex-row p-4", className, classNames?.cell)}>
+        <OrganizationCellView organization={organization} localization={localization} />
 
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            className={cn(
-                                "relative ms-auto",
-                                classNames?.button,
-                                classNames?.outlineButton
-                            )}
-                            disabled={isManagingOrganization}
-                            size="icon"
-                            type="button"
-                            variant="outline"
-                        >
-                            {isManagingOrganization ? (
-                                <Loader2 className="animate-spin" />
-                            ) : (
-                                <EllipsisIcon className={classNames?.icon} />
-                            )}
-                        </Button>
-                    </DropdownMenuTrigger>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              className={cn("relative ms-auto", classNames?.button, classNames?.outlineButton)}
+              disabled={isManagingOrganization}
+              size="icon"
+              type="button"
+              variant="outline"
+            >
+              {isManagingOrganization ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <EllipsisIcon className={classNames?.icon} />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
 
-                    <DropdownMenuContent>
-                        <DropdownMenuItem
-                            onClick={handleManageOrganization}
-                            disabled={isManagingOrganization}
-                        >
-                            <SettingsIcon className={classNames?.icon} />
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={handleManageOrganization} disabled={isManagingOrganization}>
+              <SettingsIcon className={classNames?.icon} />
 
-                            {localization.MANAGE_ORGANIZATION}
-                        </DropdownMenuItem>
+              {localization.MANAGE_ORGANIZATION}
+            </DropdownMenuItem>
 
-                        <DropdownMenuItem
-                            onClick={() => setIsLeaveDialogOpen(true)}
-                            variant="destructive"
-                        >
-                            <LogOutIcon className={classNames?.icon} />
+            <DropdownMenuItem onClick={() => setIsLeaveDialogOpen(true)} variant="destructive">
+              <LogOutIcon className={classNames?.icon} />
 
-                            {localization.LEAVE_ORGANIZATION}
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </Card>
+              {localization.LEAVE_ORGANIZATION}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </Card>
 
-            <LeaveOrganizationDialog
-                open={isLeaveDialogOpen}
-                onOpenChange={setIsLeaveDialogOpen}
-                organization={organization}
-                localization={localization}
-            />
-        </>
-    )
+      <LeaveOrganizationDialog
+        open={isLeaveDialogOpen}
+        onOpenChange={setIsLeaveDialogOpen}
+        organization={organization}
+        localization={localization}
+      />
+    </>
+  );
 }

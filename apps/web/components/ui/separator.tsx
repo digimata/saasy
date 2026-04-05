@@ -1,14 +1,16 @@
-"use client"
+// ---------------------------
+// projects/saasy/apps/web/components/ui/separator.tsx
+//
+// function Separator()    L13
+// ---------------------------
 
-import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
+"use client";
 
-import { cn } from "@/lib/utils"
+import { Separator as SeparatorPrimitive } from "@base-ui/react/separator";
 
-function Separator({
-  className,
-  orientation = "horizontal",
-  ...props
-}: SeparatorPrimitive.Props) {
+import { cn } from "@/lib/utils";
+
+function Separator({ className, orientation = "horizontal", ...props }: SeparatorPrimitive.Props) {
   return (
     <SeparatorPrimitive
       data-slot="separator"
@@ -19,7 +21,7 @@ function Separator({
       )}
       {...props}
     />
-  )
+  );
 }
 
-export { Separator }
+export { Separator };

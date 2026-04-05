@@ -1,150 +1,148 @@
-"use client"
+// -----------------------------------------------
+// projects/saasy/apps/web/components/auth/organization/remove-member-dialog.tsx
+//
+// export interface RemoveMemberDialogProps    L35
+//   classNames                                L36
+//   localization                              L37
+//   member                                    L38
+//   user                                      L38
+// export function RemoveMemberDialog()        L41
+// -----------------------------------------------
 
-import { closeDialog } from "@/lib/auth/dialog-helpers"
-import type { User } from "better-auth"
-import type { Member } from "better-auth/plugins/organization"
-import { Loader2 } from "lucide-react"
-import { type ComponentProps, useContext, useMemo, useState } from "react"
+"use client";
 
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { cn, getLocalizedError } from "@/lib/auth/utils"
-import type { AuthLocalization } from "@/lib/auth/localization/auth-localization"
-import type { SettingsCardClassNames } from "@/components/auth/settings/shared/settings-card"
-import { Button } from "@/components/ui/button"
+import { closeDialog } from "@/lib/auth/dialog-helpers";
+import type { User } from "better-auth";
+import type { Member } from "better-auth/plugins/organization";
+import { Loader2 } from "lucide-react";
+import { type ComponentProps, useContext, useMemo, useState } from "react";
+
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { cn, getLocalizedError } from "@/lib/auth/utils";
+import type { AuthLocalization } from "@/lib/auth/localization/auth-localization";
+import type { SettingsCardClassNames } from "@/components/auth/settings/shared/settings-card";
+import { Button } from "@/components/ui/button";
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle
-} from "@/components/ui/dialog"
-import { MemberCell } from "./member-cell"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { MemberCell } from "./member-cell";
 
 export interface RemoveMemberDialogProps extends ComponentProps<typeof Dialog> {
-    classNames?: SettingsCardClassNames
-    localization?: AuthLocalization
-    member: Member & { user?: Partial<User> | null }
+  classNames?: SettingsCardClassNames;
+  localization?: AuthLocalization;
+  member: Member & { user?: Partial<User> | null };
 }
 
 export function RemoveMemberDialog({
-    member,
-    classNames,
-    localization: localizationProp,
-    onOpenChange,
-    ...props
+  member,
+  classNames,
+  localization: localizationProp,
+  onOpenChange,
+  ...props
 }: RemoveMemberDialogProps) {
-    const {
-        authClient,
-        hooks: { useListMembers },
-        localization: contextLocalization,
-        toast,
-        localizeErrors
-    } = useContext(AuthUIContext)
+  const {
+    authClient,
+    hooks: { useListMembers },
+    localization: contextLocalization,
+    toast,
+    localizeErrors,
+  } = useContext(AuthUIContext);
 
-    const localization = useMemo(
-        () => ({ ...contextLocalization, ...localizationProp }),
-        [contextLocalization, localizationProp]
-    )
+  const localization = useMemo(
+    () => ({ ...contextLocalization, ...localizationProp }),
+    [contextLocalization, localizationProp]
+  );
 
-    const { refetch } = useListMembers({
-        query: { organizationId: member.organizationId }
-    })
+  const { refetch } = useListMembers({
+    query: { organizationId: member.organizationId },
+  });
 
-    const [isRemoving, setIsRemoving] = useState(false)
+  const [isRemoving, setIsRemoving] = useState(false);
 
-    const removeMember = async () => {
-        setIsRemoving(true)
+  const removeMember = async () => {
+    setIsRemoving(true);
 
-        try {
-            await authClient.organization.removeMember({
-                memberIdOrEmail: member.id,
-                organizationId: member.organizationId,
-                fetchOptions: { throw: true }
-            })
+    try {
+      await authClient.organization.removeMember({
+        memberIdOrEmail: member.id,
+        organizationId: member.organizationId,
+        fetchOptions: { throw: true },
+      });
 
-            toast({
-                variant: "success",
-                message: localization.REMOVE_MEMBER_SUCCESS
-            })
+      toast({
+        variant: "success",
+        message: localization.REMOVE_MEMBER_SUCCESS,
+      });
 
-            await refetch?.()
+      await refetch?.();
 
-            closeDialog(onOpenChange)
-        } catch (error) {
-            toast({
-                variant: "error",
-                message: getLocalizedError({
-                    error,
-                    localization,
-                    localizeErrors
-                })
-            })
-        }
-
-        setIsRemoving(false)
+      closeDialog(onOpenChange);
+    } catch (error) {
+      toast({
+        variant: "error",
+        message: getLocalizedError({
+          error,
+          localization,
+          localizeErrors,
+        }),
+      });
     }
 
-    return (
-        <Dialog onOpenChange={onOpenChange} {...props}>
-            <DialogContent
-                className={classNames?.dialog?.content}
-                onOpenAutoFocus={(e) => e.preventDefault()}
-            >
-                <DialogHeader className={classNames?.dialog?.header}>
-                    <DialogTitle
-                        className={cn("text-lg md:text-xl", classNames?.title)}
-                    >
-                        {localization.REMOVE_MEMBER}
-                    </DialogTitle>
+    setIsRemoving(false);
+  };
 
-                    <DialogDescription
-                        className={cn(
-                            "text-xs md:text-sm",
-                            classNames?.description
-                        )}
-                    >
-                        {localization.REMOVE_MEMBER_CONFIRM}
-                    </DialogDescription>
-                </DialogHeader>
+  return (
+    <Dialog onOpenChange={onOpenChange} {...props}>
+      <DialogContent
+        className={classNames?.dialog?.content}
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader className={classNames?.dialog?.header}>
+          <DialogTitle className={cn("text-lg md:text-xl", classNames?.title)}>
+            {localization.REMOVE_MEMBER}
+          </DialogTitle>
 
-                <MemberCell
-                    className={classNames?.cell}
-                    member={member}
-                    localization={localization}
-                    hideActions
-                />
+          <DialogDescription className={cn("text-xs md:text-sm", classNames?.description)}>
+            {localization.REMOVE_MEMBER_CONFIRM}
+          </DialogDescription>
+        </DialogHeader>
 
-                <DialogFooter className={classNames?.dialog?.footer}>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => closeDialog(onOpenChange)}
-                        className={cn(
-                            classNames?.button,
-                            classNames?.outlineButton
-                        )}
-                        disabled={isRemoving}
-                    >
-                        {localization.CANCEL}
-                    </Button>
+        <MemberCell
+          className={classNames?.cell}
+          member={member}
+          localization={localization}
+          hideActions
+        />
 
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        onClick={removeMember}
-                        className={cn(
-                            classNames?.button,
-                            classNames?.destructiveButton
-                        )}
-                        disabled={isRemoving}
-                    >
-                        {isRemoving && <Loader2 className="animate-spin" />}
+        <DialogFooter className={classNames?.dialog?.footer}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => closeDialog(onOpenChange)}
+            className={cn(classNames?.button, classNames?.outlineButton)}
+            disabled={isRemoving}
+          >
+            {localization.CANCEL}
+          </Button>
 
-                        {localization.REMOVE_MEMBER}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    )
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={removeMember}
+            className={cn(classNames?.button, classNames?.destructiveButton)}
+            disabled={isRemoving}
+          >
+            {isRemoving && <Loader2 className="animate-spin" />}
+
+            {localization.REMOVE_MEMBER}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }

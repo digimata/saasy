@@ -1,84 +1,108 @@
-"use client"
+// -------------------------------------------------------
+// projects/saasy/apps/web/components/auth/organization/organization-switcher.tsx
+//
+// export interface OrganizationSwitcherClassNames     L68
+//   base                                              L69
+//   skeleton                                          L70
+//   trigger                                           L71
+//   base                                              L72
+//   avatar                                            L73
+//   user                                              L74
+//   organization                                      L75
+//   skeleton                                          L76
+//   content                                           L78
+//   base                                              L79
+//   user                                              L80
+//   organization                                      L81
+//   avatar                                            L82
+//   menuItem                                          L83
+//   separator                                         L84
+// export interface OrganizationSwitcherProps          L88
+//   classNames                                        L89
+//   align                                             L90
+//   alignOffset                                       L91
+//   side                                              L92
+//   sideOffset                                        L93
+//   trigger                                           L94
+//   localization                                      L95
+//   slug                                              L96
+//   onSetActive                                       L97
+//   hidePersonal                                     L104
+//   hideCreate                                       L105
+// export function OrganizationSwitcher()             L118
+// -------------------------------------------------------
 
-import type { Organization } from "better-auth/plugins/organization"
-import {
-    ChevronsUpDown,
-    LogInIcon,
-    PlusCircleIcon,
-    SettingsIcon
-} from "lucide-react"
-import {
-    type ComponentProps,
-    type ReactNode,
-    useCallback,
-    useContext,
-    useEffect,
-    useMemo,
-    useState
-} from "react"
+"use client";
 
-import { useCurrentOrganization } from "@/hooks/auth/use-current-organization"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { cn, getLocalizedError } from "@/lib/auth/utils"
-import type { AuthLocalization } from "@/lib/auth/localization/auth-localization"
-import type { User } from "@/lib/auth/types/auth-client"
-import { Button } from "@/components/ui/button"
+import type { Organization } from "better-auth/plugins/organization";
+import { ChevronsUpDown, LogInIcon, PlusCircleIcon, SettingsIcon } from "lucide-react";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu"
-import { UserAvatar, type UserAvatarClassNames } from "@/components/auth/user-avatar"
-import type { UserViewClassNames } from "@/components/auth/user-view"
-import { CreateOrganizationDialog } from "./create-organization-dialog"
+  type ComponentProps,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
+import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { cn, getLocalizedError } from "@/lib/auth/utils";
+import type { AuthLocalization } from "@/lib/auth/localization/auth-localization";
+import { Button } from "@/components/ui/button";
 import {
-    OrganizationCellView,
-    type OrganizationViewClassNames
-} from "./organization-cell-view"
-import { OrganizationLogo } from "./organization-logo"
-import { PersonalAccountView } from "./personal-account-view"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { UserAvatar, type UserAvatarClassNames } from "@/components/auth/user-avatar";
+import type { UserViewClassNames } from "@/components/auth/user-view";
+import { CreateOrganizationDialog } from "./create-organization-dialog";
+import { OrganizationCellView, type OrganizationViewClassNames } from "./organization-cell-view";
+import { OrganizationLogo } from "./organization-logo";
+import { PersonalAccountView } from "./personal-account-view";
 
 export interface OrganizationSwitcherClassNames {
-    base?: string
-    skeleton?: string
-    trigger?: {
-        base?: string
-        avatar?: UserAvatarClassNames
-        user?: UserViewClassNames
-        organization?: OrganizationViewClassNames
-        skeleton?: string
-    }
-    content?: {
-        base?: string
-        user?: UserViewClassNames
-        organization?: OrganizationViewClassNames
-        avatar?: UserAvatarClassNames
-        menuItem?: string
-        separator?: string
-    }
+  base?: string;
+  skeleton?: string;
+  trigger?: {
+    base?: string;
+    avatar?: UserAvatarClassNames;
+    user?: UserViewClassNames;
+    organization?: OrganizationViewClassNames;
+    skeleton?: string;
+  };
+  content?: {
+    base?: string;
+    user?: UserViewClassNames;
+    organization?: OrganizationViewClassNames;
+    avatar?: UserAvatarClassNames;
+    menuItem?: string;
+    separator?: string;
+  };
 }
 
-export interface OrganizationSwitcherProps
-    extends Omit<ComponentProps<typeof Button>, "trigger"> {
-    classNames?: OrganizationSwitcherClassNames
-    align?: "center" | "start" | "end"
-    alignOffset?: number
-    side?: "top" | "right" | "bottom" | "left"
-    sideOffset?: number
-    trigger?: ReactNode
-    localization?: AuthLocalization
-    slug?: string
-    onSetActive?: (organization: Organization | null) => void
-    /**
-     * Hide the personal organization option from the switcher.
-     * When true, users can only switch between organizations and cannot access their personal account.
-     * If no organization is active, the first available organization will be automatically selected.
-     * @default false
-     */
-    hidePersonal?: boolean
-    hideCreate?: boolean
+export interface OrganizationSwitcherProps extends Omit<ComponentProps<typeof Button>, "trigger"> {
+  classNames?: OrganizationSwitcherClassNames;
+  align?: "center" | "start" | "end";
+  alignOffset?: number;
+  side?: "top" | "right" | "bottom" | "left";
+  sideOffset?: number;
+  trigger?: ReactNode;
+  localization?: AuthLocalization;
+  slug?: string;
+  onSetActive?: (organization: Organization | null) => void;
+  /**
+   * Hide the personal organization option from the switcher.
+   * When true, users can only switch between organizations and cannot access their personal account.
+   * If no organization is active, the first available organization will be automatically selected.
+   * @default false
+   */
+  hidePersonal?: boolean;
+  hideCreate?: boolean;
 }
 
 /**
@@ -92,431 +116,368 @@ export interface OrganizationSwitcherProps
  * - Can be customized with additional links and styling options
  */
 export function OrganizationSwitcher({
-    className,
-    classNames,
-    align,
-    alignOffset,
-    side,
-    sideOffset,
-    trigger,
-    localization: localizationProp,
-    slug: slugProp,
-    size,
-    onSetActive,
-    hidePersonal,
-    hideCreate,
-    ...props
+  className,
+  classNames,
+  align,
+  alignOffset,
+  side,
+  sideOffset,
+  trigger,
+  localization: localizationProp,
+  slug: slugProp,
+  size,
+  onSetActive,
+  hidePersonal,
+  hideCreate,
+  ...props
 }: OrganizationSwitcherProps) {
-    const {
-        authClient,
-        basePath,
-        hooks: { useSession, useListOrganizations },
-        localization: contextLocalization,
-        account: accountOptions,
-        organization: organizationOptions,
-        redirectTo,
-        navigate,
-        toast,
-        viewPaths,
-        Link,
-        localizeErrors
-    } = useContext(AuthUIContext)
+  const {
+    authClient,
+    basePath,
+    hooks: { useSession, useListOrganizations },
+    localization: contextLocalization,
+    account: accountOptions,
+    organization: organizationOptions,
+    redirectTo,
+    navigate,
+    toast,
+    viewPaths,
+    Link,
+    localizeErrors,
+  } = useContext(AuthUIContext);
 
-    const {
-        pathMode,
-        slug: contextSlug,
-        personalPath
-    } = organizationOptions || {}
+  const { pathMode, slug: contextSlug, personalPath } = organizationOptions || {};
 
-    const slug = slugProp || contextSlug
+  const slug = slugProp || contextSlug;
 
-    const localization = useMemo(
-        () => ({ ...contextLocalization, ...localizationProp }),
-        [contextLocalization, localizationProp]
-    )
+  const localization = useMemo(
+    () => ({ ...contextLocalization, ...localizationProp }),
+    [contextLocalization, localizationProp]
+  );
 
-    const [activeOrganizationPending, setActiveOrganizationPending] =
-        useState(false)
-    const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false)
-    const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [activeOrganizationPending, setActiveOrganizationPending] = useState(false);
+  const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
-    const { data: sessionData, isPending: sessionPending } = useSession()
-    const user = sessionData?.user
+  const { data: sessionData, isPending: sessionPending } = useSession();
+  const user = sessionData?.user;
 
-    const { data: organizations, isPending: organizationsPending } =
-        useListOrganizations()
+  const { data: organizations, isPending: organizationsPending } = useListOrganizations();
 
-    const {
-        data: activeOrganization,
-        isPending: organizationPending,
-        isRefetching: organizationRefetching,
-        refetch: organizationRefetch
-    } = useCurrentOrganization({ slug })
+  const {
+    data: activeOrganization,
+    isPending: organizationPending,
+    isRefetching: organizationRefetching,
+    refetch: organizationRefetch,
+  } = useCurrentOrganization({ slug });
 
-    const isPending =
-        organizationsPending ||
-        sessionPending ||
-        activeOrganizationPending ||
-        organizationPending
+  const isPending =
+    organizationsPending || sessionPending || activeOrganizationPending || organizationPending;
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: ignore
-    useEffect(() => {
-        if (organizationRefetching) return
+  // biome-ignore lint/correctness/useExhaustiveDependencies: ignore
+  useEffect(() => {
+    if (organizationRefetching) return;
 
-        setActiveOrganizationPending(false)
-    }, [activeOrganization, organizationRefetching])
+    setActiveOrganizationPending(false);
+  }, [activeOrganization, organizationRefetching]);
 
-    const switchOrganization = useCallback(
-        async (organization: Organization | null) => {
-            // Prevent switching to personal account when hidePersonal is true
-            if (hidePersonal && organization === null) {
-                return
-            }
+  const switchOrganization = useCallback(
+    async (organization: Organization | null) => {
+      // Prevent switching to personal account when hidePersonal is true
+      if (hidePersonal && organization === null) {
+        return;
+      }
 
-            if (pathMode === "slug") {
-                if (organization) {
-                    navigate(
-                        `${organizationOptions?.basePath}/${organization.slug}`
-                    )
-                } else {
-                    navigate(personalPath ?? redirectTo)
-                }
+      if (pathMode === "slug") {
+        if (organization) {
+          navigate(`${organizationOptions?.basePath}/${organization.slug}`);
+        } else {
+          navigate(personalPath ?? redirectTo);
+        }
 
-                return
-            }
+        return;
+      }
 
-            setActiveOrganizationPending(true)
+      setActiveOrganizationPending(true);
 
-            try {
-                onSetActive?.(organization)
+      try {
+        onSetActive?.(organization);
 
-                await authClient.organization.setActive({
-                    organizationId: organization?.id || null,
-                    fetchOptions: {
-                        throw: true
-                    }
-                })
+        await authClient.organization.setActive({
+          organizationId: organization?.id || null,
+          fetchOptions: {
+            throw: true,
+          },
+        });
 
-                organizationRefetch?.()
-            } catch (error) {
-                toast({
-                    variant: "error",
-                    message: getLocalizedError({
-                        error,
-                        localization,
-                        localizeErrors
-                    })
-                })
-
-                setActiveOrganizationPending(false)
-            }
-        },
-        [
-            authClient,
-            toast,
+        organizationRefetch?.();
+      } catch (error) {
+        toast({
+          variant: "error",
+          message: getLocalizedError({
+            error,
             localization,
             localizeErrors,
-            onSetActive,
-            hidePersonal,
-            pathMode,
-            personalPath,
-            organizationOptions?.basePath,
-            redirectTo,
-            navigate,
-            organizationRefetch
-        ]
-    )
+          }),
+        });
 
-    // Auto-select first organization when hidePersonal is true
-    useEffect(() => {
-        if (
-            hidePersonal &&
-            !activeOrganization &&
-            !activeOrganizationPending &&
-            organizations &&
-            organizations.length > 0 &&
-            !sessionPending &&
-            !organizationPending &&
-            !slug
-        ) {
-            switchOrganization(organizations[0] ?? null)
-        }
-    }, [
-        hidePersonal,
-        activeOrganization,
-        activeOrganizationPending,
-        organizations,
-        sessionPending,
-        organizationPending,
-        switchOrganization,
-        slug
-    ])
+        setActiveOrganizationPending(false);
+      }
+    },
+    [
+      authClient,
+      toast,
+      localization,
+      localizeErrors,
+      onSetActive,
+      hidePersonal,
+      pathMode,
+      personalPath,
+      organizationOptions?.basePath,
+      redirectTo,
+      navigate,
+      organizationRefetch,
+    ]
+  );
 
-    return (
-        <>
-            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                <DropdownMenuTrigger asChild>
-                    {trigger ||
-                        (size === "icon" ? (
-                            <Button
-                                size="icon"
-                                className={cn(
-                                    "size-fit rounded-full",
-                                    className,
-                                    classNames?.trigger?.base
-                                )}
-                                variant="ghost"
-                                type="button"
-                                {...props}
-                            >
-                                {isPending ||
-                                activeOrganization ||
-                                !sessionData ||
-                                (user as User)?.isAnonymous ||
-                                hidePersonal ? (
-                                    <OrganizationLogo
-                                        key={activeOrganization?.logo}
-                                        className={cn(
-                                            className,
-                                            classNames?.base
-                                        )}
-                                        classNames={classNames?.trigger?.avatar}
-                                        isPending={isPending}
-                                        organization={activeOrganization}
-                                        aria-label={localization.ORGANIZATION}
-                                        localization={localization}
-                                    />
-                                ) : (
-                                    <UserAvatar
-                                        key={user?.image}
-                                        className={cn(
-                                            className,
-                                            classNames?.base
-                                        )}
-                                        classNames={classNames?.trigger?.avatar}
-                                        user={user}
-                                        aria-label={localization.ACCOUNT}
-                                        localization={localization}
-                                    />
-                                )}
-                            </Button>
-                        ) : (
-                            <Button
-                                className={cn(
-                                    "!p-2 h-fit",
-                                    className,
-                                    classNames?.trigger?.base
-                                )}
-                                size={size}
-                                {...props}
-                            >
-                                {isPending ||
-                                activeOrganization ||
-                                !sessionData ||
-                                (user as User)?.isAnonymous ||
-                                hidePersonal ? (
-                                    <OrganizationCellView
-                                        classNames={
-                                            classNames?.trigger?.organization
-                                        }
-                                        isPending={isPending}
-                                        localization={localization}
-                                        organization={activeOrganization}
-                                        size={size as any}
-                                    />
-                                ) : (
-                                    <PersonalAccountView
-                                        classNames={classNames?.trigger?.user}
-                                        localization={localization}
-                                        size={size as any}
-                                        user={user}
-                                    />
-                                )}
+  // Auto-select first organization when hidePersonal is true
+  useEffect(() => {
+    if (
+      hidePersonal &&
+      !activeOrganization &&
+      !activeOrganizationPending &&
+      organizations &&
+      organizations.length > 0 &&
+      !sessionPending &&
+      !organizationPending &&
+      !slug
+    ) {
+      switchOrganization(organizations[0] ?? null);
+    }
+  }, [
+    hidePersonal,
+    activeOrganization,
+    activeOrganizationPending,
+    organizations,
+    sessionPending,
+    organizationPending,
+    switchOrganization,
+    slug,
+  ]);
 
-                                <ChevronsUpDown className="ml-auto" />
-                            </Button>
-                        ))}
-                </DropdownMenuTrigger>
+  return (
+    <>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+        <DropdownMenuTrigger asChild>
+          {trigger ||
+            (size === "icon" ? (
+              <Button
+                size="icon"
+                className={cn("size-fit rounded-full", className, classNames?.trigger?.base)}
+                variant="ghost"
+                type="button"
+                {...props}
+              >
+                {isPending || activeOrganization || !sessionData || hidePersonal ? (
+                  <OrganizationLogo
+                    key={activeOrganization?.logo}
+                    className={cn(className, classNames?.base)}
+                    classNames={classNames?.trigger?.avatar}
+                    isPending={isPending}
+                    organization={activeOrganization}
+                    aria-label={localization.ORGANIZATION}
+                    localization={localization}
+                  />
+                ) : (
+                  <UserAvatar
+                    key={user?.image}
+                    className={cn(className, classNames?.base)}
+                    classNames={classNames?.trigger?.avatar}
+                    user={user}
+                    aria-label={localization.ACCOUNT}
+                    localization={localization}
+                  />
+                )}
+              </Button>
+            ) : (
+              <Button
+                className={cn("!p-2 h-fit", className, classNames?.trigger?.base)}
+                size={size}
+                {...props}
+              >
+                {isPending || activeOrganization || !sessionData || hidePersonal ? (
+                  <OrganizationCellView
+                    classNames={classNames?.trigger?.organization}
+                    isPending={isPending}
+                    localization={localization}
+                    organization={activeOrganization}
+                    size={size as any}
+                  />
+                ) : (
+                  <PersonalAccountView
+                    classNames={classNames?.trigger?.user}
+                    localization={localization}
+                    size={size as any}
+                    user={user}
+                  />
+                )}
 
-                <DropdownMenuContent
-                    className={cn(
-                        "w-[--radix-dropdown-menu-trigger-width] min-w-56 max-w-64",
-                        classNames?.content?.base
-                    )}
-                    align={align}
-                    alignOffset={alignOffset}
-                    side={side}
-                    sideOffset={sideOffset}
-                    onCloseAutoFocus={(e) => e.preventDefault()}
-                >
-                    <div
-                        className={cn(
-                            "flex items-center justify-between gap-2 p-2",
-                            classNames?.content?.menuItem
-                        )}
+                <ChevronsUpDown className="ml-auto" />
+              </Button>
+            ))}
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent
+          className={cn(
+            "w-[--radix-dropdown-menu-trigger-width] min-w-56 max-w-64",
+            classNames?.content?.base
+          )}
+          align={align}
+          alignOffset={alignOffset}
+          side={side}
+          sideOffset={sideOffset}
+          onCloseAutoFocus={(e) => e.preventDefault()}
+        >
+          <div
+            className={cn(
+              "flex items-center justify-between gap-2 p-2",
+              classNames?.content?.menuItem
+            )}
+          >
+            {user || isPending ? (
+              <>
+                {activeOrganizationPending || activeOrganization || hidePersonal ? (
+                  <OrganizationCellView
+                    classNames={classNames?.content?.organization}
+                    isPending={isPending || activeOrganizationPending}
+                    organization={activeOrganization}
+                    localization={localization}
+                  />
+                ) : (
+                  <PersonalAccountView
+                    classNames={classNames?.content?.user}
+                    isPending={isPending}
+                    localization={localization}
+                    user={user}
+                  />
+                )}
+
+                {!isPending && (
+                  <Link
+                    href={
+                      activeOrganization
+                        ? pathMode === "slug"
+                          ? `${organizationOptions?.basePath}/${activeOrganization.slug}/${organizationOptions?.viewPaths.SETTINGS}`
+                          : `${organizationOptions?.basePath}/${organizationOptions?.viewPaths.SETTINGS}`
+                        : `${accountOptions?.basePath}/${accountOptions?.viewPaths.SETTINGS}`
+                    }
+                  >
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="!size-8 ml-auto"
+                      onClick={() => setDropdownOpen(false)}
                     >
-                        {(user && !(user as User).isAnonymous) || isPending ? (
-                            <>
-                                {activeOrganizationPending ||
-                                activeOrganization ||
-                                hidePersonal ? (
-                                    <OrganizationCellView
-                                        classNames={
-                                            classNames?.content?.organization
-                                        }
-                                        isPending={
-                                            isPending ||
-                                            activeOrganizationPending
-                                        }
-                                        organization={activeOrganization}
-                                        localization={localization}
-                                    />
-                                ) : (
-                                    <PersonalAccountView
-                                        classNames={classNames?.content?.user}
-                                        isPending={isPending}
-                                        localization={localization}
-                                        user={user}
-                                    />
-                                )}
+                      <SettingsIcon className="size-4" />
+                    </Button>
+                  </Link>
+                )}
+              </>
+            ) : (
+              <div className="-my-1 text-muted-foreground text-xs">{localization.ORGANIZATION}</div>
+            )}
+          </div>
 
-                                {!isPending && (
-                                    <Link
-                                        href={
-                                            activeOrganization
-                                                ? pathMode === "slug"
-                                                    ? `${organizationOptions?.basePath}/${activeOrganization.slug}/${organizationOptions?.viewPaths.SETTINGS}`
-                                                    : `${organizationOptions?.basePath}/${organizationOptions?.viewPaths.SETTINGS}`
-                                                : `${accountOptions?.basePath}/${accountOptions?.viewPaths.SETTINGS}`
-                                        }
-                                    >
-                                        <Button
-                                            size="icon"
-                                            variant="outline"
-                                            className="!size-8 ml-auto"
-                                            onClick={() =>
-                                                setDropdownOpen(false)
-                                            }
-                                        >
-                                            <SettingsIcon className="size-4" />
-                                        </Button>
-                                    </Link>
-                                )}
-                            </>
-                        ) : (
-                            <div className="-my-1 text-muted-foreground text-xs">
-                                {localization.ORGANIZATION}
-                            </div>
-                        )}
-                    </div>
+          <DropdownMenuSeparator className={classNames?.content?.separator} />
 
-                    <DropdownMenuSeparator
-                        className={classNames?.content?.separator}
+          {activeOrganization &&
+            !hidePersonal &&
+            (pathMode === "slug" ? (
+              <Link href={personalPath ?? redirectTo}>
+                <DropdownMenuItem>
+                  <PersonalAccountView
+                    classNames={classNames?.content?.user}
+                    isPending={isPending}
+                    localization={localization}
+                    user={user}
+                  />
+                </DropdownMenuItem>
+              </Link>
+            ) : (
+              <DropdownMenuItem onClick={() => switchOrganization(null)}>
+                <PersonalAccountView
+                  classNames={classNames?.content?.user}
+                  isPending={isPending}
+                  localization={localization}
+                  user={user}
+                />
+              </DropdownMenuItem>
+            ))}
+
+          {organizations?.map(
+            (organization) =>
+              organization.id !== activeOrganization?.id &&
+              (pathMode === "slug" ? (
+                <Link
+                  key={organization.id}
+                  href={`${organizationOptions?.basePath}/${organization.slug}`}
+                >
+                  <DropdownMenuItem>
+                    <OrganizationCellView
+                      classNames={classNames?.content?.organization}
+                      isPending={isPending}
+                      localization={localization}
+                      organization={organization}
                     />
+                  </DropdownMenuItem>
+                </Link>
+              ) : (
+                <DropdownMenuItem
+                  key={organization.id}
+                  onClick={() => switchOrganization(organization)}
+                >
+                  <OrganizationCellView
+                    classNames={classNames?.content?.organization}
+                    isPending={isPending}
+                    localization={localization}
+                    organization={organization}
+                  />
+                </DropdownMenuItem>
+              ))
+          )}
 
-                    {activeOrganization &&
-                        !hidePersonal &&
-                        (pathMode === "slug" ? (
-                            <Link href={personalPath ?? redirectTo}>
-                                <DropdownMenuItem>
-                                    <PersonalAccountView
-                                        classNames={classNames?.content?.user}
-                                        isPending={isPending}
-                                        localization={localization}
-                                        user={user}
-                                    />
-                                </DropdownMenuItem>
-                            </Link>
-                        ) : (
-                            <DropdownMenuItem
-                                onClick={() => switchOrganization(null)}
-                            >
-                                <PersonalAccountView
-                                    classNames={classNames?.content?.user}
-                                    isPending={isPending}
-                                    localization={localization}
-                                    user={user}
-                                />
-                            </DropdownMenuItem>
-                        ))}
+          {organizations &&
+            organizations.length > 0 &&
+            (!hidePersonal || organizations.length > 1) && (
+              <DropdownMenuSeparator className={classNames?.content?.separator} />
+            )}
 
-                    {organizations?.map(
-                        (organization) =>
-                            organization.id !== activeOrganization?.id &&
-                            (pathMode === "slug" ? (
-                                <Link
-                                    key={organization.id}
-                                    href={`${organizationOptions?.basePath}/${organization.slug}`}
-                                >
-                                    <DropdownMenuItem>
-                                        <OrganizationCellView
-                                            classNames={
-                                                classNames?.content
-                                                    ?.organization
-                                            }
-                                            isPending={isPending}
-                                            localization={localization}
-                                            organization={organization}
-                                        />
-                                    </DropdownMenuItem>
-                                </Link>
-                            ) : (
-                                <DropdownMenuItem
-                                    key={organization.id}
-                                    onClick={() =>
-                                        switchOrganization(organization)
-                                    }
-                                >
-                                    <OrganizationCellView
-                                        classNames={
-                                            classNames?.content?.organization
-                                        }
-                                        isPending={isPending}
-                                        localization={localization}
-                                        organization={organization}
-                                    />
-                                </DropdownMenuItem>
-                            ))
-                    )}
+          {!isPending && sessionData ? (
+            hideCreate ? null : (
+              <DropdownMenuItem
+                className={cn(classNames?.content?.menuItem)}
+                onClick={() => setIsCreateOrgDialogOpen(true)}
+              >
+                <PlusCircleIcon />
+                {localization.CREATE_ORGANIZATION}
+              </DropdownMenuItem>
+            )
+          ) : (
+            <Link href={`${basePath}/${viewPaths.SIGN_IN}`}>
+              <DropdownMenuItem className={cn(classNames?.content?.menuItem)}>
+                <LogInIcon />
+                {localization.SIGN_IN}
+              </DropdownMenuItem>
+            </Link>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-                    {organizations &&
-                        organizations.length > 0 &&
-                        (!hidePersonal || organizations.length > 1) && (
-                            <DropdownMenuSeparator
-                                className={classNames?.content?.separator}
-                            />
-                        )}
-
-                    {!isPending &&
-                    sessionData &&
-                    !(user as User).isAnonymous ? (
-                        hideCreate ? null : (
-                            <DropdownMenuItem
-                                className={cn(classNames?.content?.menuItem)}
-                                onClick={() => setIsCreateOrgDialogOpen(true)}
-                            >
-                                <PlusCircleIcon />
-                                {localization.CREATE_ORGANIZATION}
-                            </DropdownMenuItem>
-                        )
-                    ) : (
-                        <Link href={`${basePath}/${viewPaths.SIGN_IN}`}>
-                            <DropdownMenuItem
-                                className={cn(classNames?.content?.menuItem)}
-                            >
-                                <LogInIcon />
-                                {localization.SIGN_IN}
-                            </DropdownMenuItem>
-                        </Link>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
-
-            <CreateOrganizationDialog
-                open={isCreateOrgDialogOpen}
-                onOpenChange={setIsCreateOrgDialogOpen}
-                localization={localization}
-            />
-        </>
-    )
+      <CreateOrganizationDialog
+        open={isCreateOrgDialogOpen}
+        onOpenChange={setIsCreateOrgDialogOpen}
+        localization={localization}
+      />
+    </>
+  );
 }

@@ -1,7 +1,13 @@
-"use client"
+// -----------------------------------------
+// projects/saasy/apps/web/components/auth/redirect-to-sign-up.tsx
+//
+// export function RedirectToSignUp()    L19
+// -----------------------------------------
 
-import type { ReactNode } from "react"
-import { useAuthenticate } from "@/hooks/auth/use-authenticate"
+"use client";
+
+import type { ReactNode } from "react";
+import { useAuthenticate } from "@/hooks/auth/use-authenticate";
 
 /**
  * Redirects the user to the sign-up page
@@ -11,6 +17,6 @@ import { useAuthenticate } from "@/hooks/auth/use-authenticate"
  * for redirecting from marketing pages to the registration flow.
  */
 export function RedirectToSignUp(): ReactNode {
-    useAuthenticate({ authView: "SIGN_UP" })
-    return null
+  useAuthenticate({ authView: "SIGN_UP" });
+  return null;
 }

@@ -1,11 +1,17 @@
-"use client"
+// --------------------------------------------
+// projects/saasy/apps/web/components/auth/organization/personal-account-view.tsx
+//
+// export function PersonalAccountView()    L26
+// --------------------------------------------
 
-import { useContext, useMemo } from "react"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { cn } from "@/lib/auth/utils"
-import { Skeleton } from "@/components/ui/skeleton"
-import { UserAvatar } from "@/components/auth/user-avatar"
-import type { UserViewProps } from "@/components/auth/user-view"
+"use client";
+
+import { useContext, useMemo } from "react";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { cn } from "@/lib/auth/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { UserAvatar } from "@/components/auth/user-avatar";
+import type { UserViewProps } from "@/components/auth/user-view";
 
 /**
  * Displays user information with avatar and details in a compact view for personal accounts
@@ -18,98 +24,87 @@ import type { UserViewProps } from "@/components/auth/user-view"
  * - Supports customization through classNames prop
  */
 export function PersonalAccountView({
-    className,
-    classNames,
-    isPending,
-    size,
-    user,
-    localization: propLocalization
+  className,
+  classNames,
+  isPending,
+  size,
+  user,
+  localization: propLocalization,
 }: UserViewProps) {
-    const { localization: contextLocalization } = useContext(AuthUIContext)
+  const { localization: contextLocalization } = useContext(AuthUIContext);
 
-    const localization = useMemo(
-        () => ({ ...contextLocalization, ...propLocalization }),
-        [contextLocalization, propLocalization]
-    )
+  const localization = useMemo(
+    () => ({ ...contextLocalization, ...propLocalization }),
+    [contextLocalization, propLocalization]
+  );
 
-    return (
-        <div
-            className={cn(
-                "flex items-center gap-2",
-                className,
-                classNames?.base
-            )}
-        >
-            <UserAvatar
-                className={cn(size !== "sm" && "my-0.5")}
-                classNames={classNames?.avatar}
-                isPending={isPending}
-                localization={localization}
-                size={size ?? undefined}
-                user={user}
+  return (
+    <div className={cn("flex items-center gap-2", className, classNames?.base)}>
+      <UserAvatar
+        className={cn(size !== "sm" && "my-0.5")}
+        classNames={classNames?.avatar}
+        isPending={isPending}
+        localization={localization}
+        size={size ?? undefined}
+        user={user}
+      />
+
+      <div className={cn("grid flex-1 text-left leading-tight", classNames?.content)}>
+        {isPending ? (
+          <>
+            <Skeleton
+              className={cn(
+                "max-w-full",
+                size === "lg" ? "h-4.5 w-32" : "h-3.5 w-24",
+                classNames?.title,
+                classNames?.skeleton
+              )}
             />
 
-            <div
+            {size !== "sm" && (
+              <Skeleton
                 className={cn(
-                    "grid flex-1 text-left leading-tight",
-                    classNames?.content
+                  "mt-1.5 max-w-full",
+                  size === "lg" ? "h-3.5 w-40" : "h-3 w-32",
+                  classNames?.subtitle,
+                  classNames?.skeleton
                 )}
+              />
+            )}
+          </>
+        ) : (
+          <>
+            <span
+              className={cn(
+                "truncate font-semibold",
+                size === "lg" ? "text-base" : "text-sm",
+                classNames?.title
+              )}
             >
-                {isPending ? (
-                    <>
-                        <Skeleton
-                            className={cn(
-                                "max-w-full",
-                                size === "lg" ? "h-4.5 w-32" : "h-3.5 w-24",
-                                classNames?.title,
-                                classNames?.skeleton
-                            )}
-                        />
+              {user?.displayName ||
+                user?.name ||
+                user?.fullName ||
+                user?.firstName ||
+                user?.displayUsername ||
+                user?.username ||
+                user?.email ||
+                localization?.USER}
+            </span>
 
-                        {size !== "sm" && (
-                            <Skeleton
-                                className={cn(
-                                    "mt-1.5 max-w-full",
-                                    size === "lg" ? "h-3.5 w-40" : "h-3 w-32",
-                                    classNames?.subtitle,
-                                    classNames?.skeleton
-                                )}
-                            />
-                        )}
-                    </>
-                ) : (
-                    <>
-                        <span
-                            className={cn(
-                                "truncate font-semibold",
-                                size === "lg" ? "text-base" : "text-sm",
-                                classNames?.title
-                            )}
-                        >
-                            {user?.displayName ||
-                                user?.name ||
-                                user?.fullName ||
-                                user?.firstName ||
-                                user?.displayUsername ||
-                                user?.username ||
-                                user?.email ||
-                                localization?.USER}
-                        </span>
-
-                        {size !== "sm" && (
-                            <span
-                                className={cn(
-                                    "truncate opacity-70",
-                                    size === "lg" ? "text-sm" : "text-xs",
-                                    classNames?.subtitle
-                                )}
-                            >
-                                {localization?.PERSONAL_ACCOUNT}
-                            </span>
-                        )}
-                    </>
+            {size !== "sm" && (
+              <span
+                className={cn(
+                  "truncate opacity-70",
+                  size === "lg" ? "text-sm" : "text-xs",
+                  classNames?.subtitle
                 )}
-            </div>
-        </div>
-    )
+              >
+                {localization?.PERSONAL_ACCOUNT}
+              </span>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

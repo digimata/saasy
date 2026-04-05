@@ -1,37 +1,29 @@
-"use client"
+// ---------------------------------------------
+// projects/saasy/apps/web/components/auth/settings/skeletons/settings-cell-skeleton.tsx
+//
+// export function SettingsCellSkeleton()    L15
+// classNames                                L15
+// ---------------------------------------------
 
-import { cn } from "@/lib/auth/utils"
-import { Card } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import type { SettingsCardClassNames } from "../shared/settings-card"
+"use client";
 
-export function SettingsCellSkeleton({
-    classNames
-}: {
-    classNames?: SettingsCardClassNames
-}) {
-    return (
-        <Card
-            className={cn(
-                "flex-row items-center gap-3 px-4 py-3",
-                classNames?.cell
-            )}
-        >
-            <div className="flex items-center gap-2">
-                <Skeleton
-                    className={cn("size-5 rounded-full", classNames?.skeleton)}
-                />
+import { cn } from "@/lib/auth/utils";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { SettingsCardClassNames } from "../shared/settings-card";
 
-                <div>
-                    <Skeleton
-                        className={cn("h-4 w-24", classNames?.skeleton)}
-                    />
-                </div>
-            </div>
+export function SettingsCellSkeleton({ classNames }: { classNames?: SettingsCardClassNames }) {
+  return (
+    <Card className={cn("flex-row items-center gap-3 px-4 py-3", classNames?.cell)}>
+      <div className="flex items-center gap-2">
+        <Skeleton className={cn("size-5 rounded-full", classNames?.skeleton)} />
 
-            <Skeleton
-                className={cn("ms-auto size-8 w-12", classNames?.skeleton)}
-            />
-        </Card>
-    )
+        <div>
+          <Skeleton className={cn("h-4 w-24", classNames?.skeleton)} />
+        </div>
+      </div>
+
+      <Skeleton className={cn("ms-auto size-8 w-12", classNames?.skeleton)} />
+    </Card>
+  );
 }

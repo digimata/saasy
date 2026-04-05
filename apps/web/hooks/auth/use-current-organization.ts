@@ -1,6 +1,6 @@
-import type { Organization } from "better-auth/plugins/organization"
-import { useContext, useMemo } from "react"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
+import type { Organization } from "better-auth/plugins/organization";
+import { useContext, useMemo } from "react";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 
 // -----------------------------------------------
 // projects/saasy/apps/web/hooks/auth/use-current-organization.ts
@@ -10,57 +10,57 @@ import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
 // -----------------------------------------------
 
 export function useCurrentOrganization({
-    slug: slugProp
+  slug: slugProp,
 }: {
-    slug?: string
+  slug?: string;
 } = {}) {
+  const {
+    organization: organizationOptions,
+    hooks: { useActiveOrganization, useListOrganizations },
+  } = useContext(AuthUIContext);
+
+  const { pathMode, slug: contextSlug } = organizationOptions || {};
+
+  let data: Organization | null | undefined;
+  let isPending: boolean | undefined;
+  let isRefetching: boolean | undefined;
+
+  let refetch: (() => void) | undefined;
+
+  const {
+    data: organizations,
+    isPending: organizationsPending,
+    isRefetching: organizationsRefetching,
+  } = useListOrganizations();
+
+  if (pathMode === "slug") {
+    const slug = slugProp || contextSlug;
+
+    data = organizations?.find((organization) => organization.slug === slug);
+    isPending = organizationsPending;
+    isRefetching = organizationsRefetching;
+  } else {
     const {
-        organization: organizationOptions,
-        hooks: { useActiveOrganization, useListOrganizations }
-    } = useContext(AuthUIContext)
+      data: activeOrganization,
+      isPending: organizationPending,
+      isRefetching: organizationRefetching,
+      refetch: refetchOrganization,
+    } = useActiveOrganization();
 
-    const { pathMode, slug: contextSlug } = organizationOptions || {}
+    refetch = refetchOrganization;
 
-    let data: Organization | null | undefined
-    let isPending: boolean | undefined
-    let isRefetching: boolean | undefined
+    data = activeOrganization;
+    isPending = organizationPending;
+    isRefetching = organizationRefetching;
+  }
 
-    let refetch: (() => void) | undefined
-
-    const {
-        data: organizations,
-        isPending: organizationsPending,
-        isRefetching: organizationsRefetching
-    } = useListOrganizations()
-
-    if (pathMode === "slug") {
-        const slug = slugProp || contextSlug
-
-        data = organizations?.find((organization) => organization.slug === slug)
-        isPending = organizationsPending
-        isRefetching = organizationsRefetching
-    } else {
-        const {
-            data: activeOrganization,
-            isPending: organizationPending,
-            isRefetching: organizationRefetching,
-            refetch: refetchOrganization
-        } = useActiveOrganization()
-
-        refetch = refetchOrganization
-
-        data = activeOrganization
-        isPending = organizationPending
-        isRefetching = organizationRefetching
-    }
-
-    return useMemo(
-        () => ({
-            data,
-            isPending,
-            isRefetching,
-            refetch
-        }),
-        [data, isPending, isRefetching, refetch]
-    )
+  return useMemo(
+    () => ({
+      data,
+      isPending,
+      isRefetching,
+      refetch,
+    }),
+    [data, isPending, isRefetching, refetch]
+  );
 }

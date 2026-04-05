@@ -4,8 +4,8 @@ outline: |
   • ADR-002 :: Drizzle over Prisma      L11
     ◦ 1. Decision                       L19
     ◦ 2. Rationale                      L26
-    ◦ 3. Design Implications            L40
-    ◦ 4. When to Revisit                L47
+    ◦ 3. Design Implications            L42
+    ◦ 4. When to Revisit                L49
 ---
 
 # ADR-002 :: Drizzle over Prisma
@@ -26,10 +26,12 @@ Last updated: `2026.04.04`
 ## 2. Rationale
 
 **Considered:**
+
 - **Prisma** — More mature ecosystem, better docs. But: generates a client from a `.prisma` schema file (separate from TypeScript), custom PG schemas require workarounds, heavier runtime (Rust query engine binary), and the schema file is a second source of truth alongside TypeScript types.
 - **Kysely** — Lightweight query builder with good type inference. But: no schema definition or migration tooling — you'd need a separate migration tool. BetterAuth internally uses Kysely, but that's an implementation detail.
 
 **Why Drizzle:**
+
 - Schema defined in TypeScript — types are inferred directly from table definitions (`InferSelectModel`, `InferInsertModel`).
 - `pgSchema()` lets us define tables in custom PG schemas (`auth.*`, `billing.*`).
 - Lightweight — no generated client, no binary runtime.

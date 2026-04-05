@@ -1,7 +1,14 @@
-"use client"
+// ------------------------------------
+// projects/saasy/apps/web/components/auth/auth-loading.tsx
+//
+// export function AuthLoading()    L21
+// children                         L21
+// ------------------------------------
 
-import { type ReactNode, useContext } from "react"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
+"use client";
+
+import { type ReactNode, useContext } from "react";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 
 /**
  * Conditionally renders content during authentication loading state
@@ -12,10 +19,10 @@ import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
  * content while waiting for the authentication check to complete.
  */
 export function AuthLoading({ children }: { children: ReactNode }) {
-    const {
-        hooks: { useSession }
-    } = useContext(AuthUIContext)
-    const { isPending } = useSession()
+  const {
+    hooks: { useSession },
+  } = useContext(AuthUIContext);
+  const { isPending } = useSession();
 
-    return isPending ? children : null
+  return isPending ? children : null;
 }

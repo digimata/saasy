@@ -1,25 +1,32 @@
-"use client"
+// --------------------------------
+// projects/saasy/apps/web/components/auth/sign-out.tsx
+//
+// export function SignOut()    L16
+// redirectTo                   L16
+// --------------------------------
 
-import { Loader2 } from "lucide-react"
-import { useContext, useEffect, useRef } from "react"
+"use client";
 
-import { useOnSuccessTransition } from "@/hooks/auth/use-success-transition"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
+import { Loader2 } from "lucide-react";
+import { useContext, useEffect, useRef } from "react";
+
+import { useOnSuccessTransition } from "@/hooks/auth/use-success-transition";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 
 export function SignOut({ redirectTo }: { redirectTo?: string }) {
-    const signingOut = useRef(false)
+  const signingOut = useRef(false);
 
-    const { authClient, basePath, viewPaths } = useContext(AuthUIContext)
-    const { onSuccess } = useOnSuccessTransition({
-        redirectTo: redirectTo || `${basePath}/${viewPaths.SIGN_IN}`
-    })
+  const { authClient, basePath, viewPaths } = useContext(AuthUIContext);
+  const { onSuccess } = useOnSuccessTransition({
+    redirectTo: redirectTo || `${basePath}/${viewPaths.SIGN_IN}`,
+  });
 
-    useEffect(() => {
-        if (signingOut.current) return
-        signingOut.current = true
+  useEffect(() => {
+    if (signingOut.current) return;
+    signingOut.current = true;
 
-        authClient.signOut().finally(onSuccess)
-    }, [authClient, onSuccess])
+    authClient.signOut().finally(onSuccess);
+  }, [authClient, onSuccess]);
 
-    return <Loader2 className="animate-spin" />
+  return <Loader2 className="animate-spin" />;
 }

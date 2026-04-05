@@ -1,43 +1,39 @@
-import { useCallback, useContext, useState } from "react"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
-import { getSearchParam } from "@/lib/auth/utils"
+import { useCallback, useContext, useState } from "react";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { getSearchParam } from "@/lib/auth/utils";
 
-export function useOnSuccessTransition({
-    redirectTo: redirectToProp
-}: {
-    redirectTo?: string
-}) {
-    const { redirectTo: contextRedirectTo } = useContext(AuthUIContext)
+// -----------------------------------------------
+// projects/saasy/apps/web/hooks/auth/use-success-transition.ts
+//
+// redirectTo                                  L12
+// export function useOnSuccessTransition()    L12
+// -----------------------------------------------
 
-    const [isPending, setIsPending] = useState(false)
+export function useOnSuccessTransition({ redirectTo: redirectToProp }: { redirectTo?: string }) {
+  const { redirectTo: contextRedirectTo } = useContext(AuthUIContext);
 
-    const {
-        navigate,
-        hooks: { useSession },
-        onSessionChange
-    } = useContext(AuthUIContext)
+  const [isPending, setIsPending] = useState(false);
 
-    const { refetch: refetchSession } = useSession()
+  const {
+    navigate,
+    hooks: { useSession },
+    onSessionChange,
+  } = useContext(AuthUIContext);
 
-    const onSuccess = useCallback(async () => {
-        setIsPending(true)
+  const { refetch: refetchSession } = useSession();
 
-        await refetchSession?.()
+  const onSuccess = useCallback(async () => {
+    setIsPending(true);
 
-        if (onSessionChange) await onSessionChange()
+    await refetchSession?.();
 
-        setIsPending(false)
+    if (onSessionChange) await onSessionChange();
 
-        const redirectTo =
-            redirectToProp || getSearchParam("redirectTo") || contextRedirectTo
-        navigate(redirectTo)
-    }, [
-        refetchSession,
-        onSessionChange,
-        navigate,
-        redirectToProp,
-        contextRedirectTo
-    ])
+    setIsPending(false);
 
-    return { onSuccess, isPending }
+    const redirectTo = redirectToProp || getSearchParam("redirectTo") || contextRedirectTo;
+    navigate(redirectTo);
+  }, [refetchSession, onSessionChange, navigate, redirectToProp, contextRedirectTo]);
+
+  return { onSuccess, isPending };
 }

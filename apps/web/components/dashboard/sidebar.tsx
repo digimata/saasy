@@ -1,12 +1,19 @@
+// --------------------------------------------
+// projects/saasy/apps/web/components/dashboard/sidebar.tsx
+//
+// const navItems                           L18
+// export function Sidebar()                L25
+// export async function handleSignOut()    L25
+// --------------------------------------------
+
 "use client";
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Settings, Users, CreditCard, LayoutDashboard, LogOut } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import { signOut } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
 
 const navItems = [
   { label: "Overview", href: "/", icon: LayoutDashboard },
@@ -21,7 +28,7 @@ export function Sidebar() {
   const [hovered, setHovered] = useState(false);
 
   async function handleSignOut() {
-    await signOut();
+    // (TODO): Wire the actual sign out logic
     router.push("/sign-in");
   }
 
@@ -49,9 +56,7 @@ export function Sidebar() {
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 h-10 transition-colors duration-200",
-                  active
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                  active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <span className="grid place-items-center w-8 shrink-0">
@@ -62,7 +67,7 @@ export function Sidebar() {
                     "text-sm font-medium whitespace-nowrap transition-all duration-300",
                     hovered
                       ? "translate-x-0 opacity-100 blur-none"
-                      : "translate-x-[-8px] opacity-0 blur-sm",
+                      : "translate-x-[-8px] opacity-0 blur-sm"
                   )}
                 >
                   {item.label}
@@ -75,7 +80,7 @@ export function Sidebar() {
 
       {/* Bottom: sign out */}
       <button
-        onClick={handleSignOut}
+        // onClick={handleSignOut}
         className="flex items-center gap-3 h-10 text-muted-foreground hover:text-foreground transition-colors duration-200 cursor-pointer"
       >
         <span className="grid place-items-center w-8 shrink-0">
@@ -84,9 +89,7 @@ export function Sidebar() {
         <span
           className={cn(
             "text-sm font-medium whitespace-nowrap transition-all duration-300",
-            hovered
-              ? "translate-x-0 opacity-100 blur-none"
-              : "translate-x-[-8px] opacity-0 blur-sm",
+            hovered ? "translate-x-0 opacity-100 blur-none" : "translate-x-[-8px] opacity-0 blur-sm"
           )}
         >
           Sign out

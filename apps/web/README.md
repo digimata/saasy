@@ -1,3 +1,11 @@
+---
+path: projects/saasy/apps/web/README.md
+outline: |
+  ◦ Getting Started       L11
+  ◦ Learn More            L31
+  ◦ Deploy on Vercel      L40
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
 
 ## Getting Started

@@ -1,47 +1,54 @@
-"use client"
+// --------------------------------------
+// projects/saasy/apps/web/components/auth/password-input.tsx
+//
+// export function PasswordInput()    L17
+// enableToggle                       L22
+// --------------------------------------
 
-import { EyeIcon, EyeOffIcon } from "lucide-react"
-import { type ComponentProps, useState } from "react"
+"use client";
 
-import { cn } from "@/lib/auth/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { EyeIcon, EyeOffIcon } from "lucide-react";
+import { type ComponentProps, useState } from "react";
+
+import { cn } from "@/lib/auth/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function PasswordInput({
-    className,
-    enableToggle,
-    onChange,
-    ...props
+  className,
+  enableToggle,
+  onChange,
+  ...props
 }: ComponentProps<typeof Input> & { enableToggle?: boolean }) {
-    const [disabled, setDisabled] = useState(true)
-    const [isVisible, setIsVisible] = useState(false)
+  const [disabled, setDisabled] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
-    return (
-        <div className="relative">
-            <Input
-                className={cn(enableToggle && "pr-10", className)}
-                {...props}
-                type={isVisible && enableToggle ? "text" : "password"}
-                onChange={(event) => {
-                    setDisabled(!event.target.value)
-                    onChange?.(event)
-                }}
-            />
+  return (
+    <div className="relative">
+      <Input
+        className={cn(enableToggle && "pr-10", className)}
+        {...props}
+        type={isVisible && enableToggle ? "text" : "password"}
+        onChange={(event) => {
+          setDisabled(!event.target.value);
+          onChange?.(event);
+        }}
+      />
 
-            {enableToggle && (
-                <>
-                    <Button
-                        className="!bg-transparent absolute top-0 right-0"
-                        disabled={disabled}
-                        size="icon"
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setIsVisible(!isVisible)}
-                    >
-                        {isVisible ? <EyeIcon /> : <EyeOffIcon />}
-                    </Button>
+      {enableToggle && (
+        <>
+          <Button
+            className="!bg-transparent absolute top-0 right-0"
+            disabled={disabled}
+            size="icon"
+            type="button"
+            variant="ghost"
+            onClick={() => setIsVisible(!isVisible)}
+          >
+            {isVisible ? <EyeIcon /> : <EyeOffIcon />}
+          </Button>
 
-                    <style>{`
+          <style>{`
                         .hide-password-toggle::-ms-reveal,
                         .hide-password-toggle::-ms-clear {
                             visibility: hidden;
@@ -49,8 +56,8 @@ export function PasswordInput({
                             display: none;
                         }
                     `}</style>
-                </>
-            )}
-        </div>
-    )
+        </>
+      )}
+    </div>
+  );
 }

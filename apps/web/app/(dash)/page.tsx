@@ -1,3 +1,9 @@
+// ---------------------------------------------
+// projects/saasy/apps/web/app/(dash)/page.tsx
+//
+// export default function DashboardPage()    L7
+// ---------------------------------------------
+
 export default function DashboardPage() {
   return (
     <div>

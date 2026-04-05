@@ -1,5 +1,15 @@
 import { type JSX } from "react";
 
+// -----------------------------
+// projects/saasy/packages/ui/src/card.tsx
+//
+// export function Card()    L13
+// className                 L19
+// title                     L20
+// children                  L21
+// href                      L22
+// -----------------------------
+
 export function Card({
   className,
   title,

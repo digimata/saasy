@@ -1,56 +1,62 @@
-import { useContext, useEffect } from "react"
-import { useCurrentOrganization } from "@/hooks/auth/use-current-organization"
-import { AuthUIContext } from "./auth-ui-provider"
+import { useContext, useEffect } from "react";
+import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
+import { AuthUIContext } from "./auth-ui-provider";
+
+// -----------------------------------------
+// projects/saasy/apps/web/lib/auth/organization-refetcher.tsx
+//
+// export const OrganizationRefetcher    L11
+// -----------------------------------------
 
 export const OrganizationRefetcher = () => {
-    const {
-        hooks: { useListOrganizations, useSession },
-        organization: organizationOptions,
-        navigate,
-        redirectTo
-    } = useContext(AuthUIContext)
+  const {
+    hooks: { useListOrganizations, useSession },
+    organization: organizationOptions,
+    navigate,
+    redirectTo,
+  } = useContext(AuthUIContext);
 
-    const { slug, pathMode, personalPath } = organizationOptions || {}
+  const { slug, pathMode, personalPath } = organizationOptions || {};
 
-    const { data: sessionData } = useSession()
+  const { data: sessionData } = useSession();
 
-    const {
-        data: organization,
-        isPending: organizationPending,
-        isRefetching: organizationRefetching,
-        refetch: refetchOrganization
-    } = useCurrentOrganization()
+  const {
+    data: organization,
+    isPending: organizationPending,
+    isRefetching: organizationRefetching,
+    refetch: refetchOrganization,
+  } = useCurrentOrganization();
 
-    const { refetch: refetchListOrganizations } = useListOrganizations()
+  const { refetch: refetchListOrganizations } = useListOrganizations();
 
-    const { data: organizations } = useListOrganizations()
+  const { data: organizations } = useListOrganizations();
 
-    // biome-ignore lint/correctness/useExhaustiveDependencies: Refetch fix
-    useEffect(() => {
-        if (!sessionData?.user.id) return
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Refetch fix
+  useEffect(() => {
+    if (!sessionData?.user.id) return;
 
-        if (organization || organizations) {
-            refetchOrganization?.()
-            refetchListOrganizations?.()
-        }
-    }, [sessionData?.user.id])
+    if (organization || organizations) {
+      refetchOrganization?.();
+      refetchListOrganizations?.();
+    }
+  }, [sessionData?.user.id]);
 
-    useEffect(() => {
-        if (organizationRefetching || organizationPending) return
+  useEffect(() => {
+    if (organizationRefetching || organizationPending) return;
 
-        if (slug && pathMode === "slug" && !organization) {
-            navigate(personalPath || redirectTo)
-        }
-    }, [
-        organization,
-        organizationRefetching,
-        organizationPending,
-        slug,
-        pathMode,
-        personalPath,
-        navigate,
-        redirectTo
-    ])
+    if (slug && pathMode === "slug" && !organization) {
+      navigate(personalPath || redirectTo);
+    }
+  }, [
+    organization,
+    organizationRefetching,
+    organizationPending,
+    slug,
+    pathMode,
+    personalPath,
+    navigate,
+    redirectTo,
+  ]);
 
-    return null
-}
+  return null;
+};

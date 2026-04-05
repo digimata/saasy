@@ -1,7 +1,14 @@
-"use client"
+// ---------------------------------
+// projects/saasy/apps/web/components/auth/signed-in.tsx
+//
+// export function SignedIn()    L20
+// children                      L20
+// ---------------------------------
 
-import { type ReactNode, useContext } from "react"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
+"use client";
+
+import { type ReactNode, useContext } from "react";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 
 /**
  * Conditionally renders content for authenticated users only
@@ -11,10 +18,10 @@ import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
  * content or UI elements that should only be visible to signed-in users.
  */
 export function SignedIn({ children }: { children: ReactNode }) {
-    const {
-        hooks: { useSession }
-    } = useContext(AuthUIContext)
-    const { data } = useSession()
+  const {
+    hooks: { useSession },
+  } = useContext(AuthUIContext);
+  const { data } = useSession();
 
-    return data ? children : null
+  return data ? children : null;
 }

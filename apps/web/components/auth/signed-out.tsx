@@ -1,7 +1,14 @@
-"use client"
+// ----------------------------------
+// projects/saasy/apps/web/components/auth/signed-out.tsx
+//
+// export function SignedOut()    L20
+// children                       L20
+// ----------------------------------
 
-import { type ReactNode, useContext } from "react"
-import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
+"use client";
+
+import { type ReactNode, useContext } from "react";
+import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 
 /**
  * Conditionally renders content for unauthenticated users only
@@ -11,10 +18,10 @@ import { AuthUIContext } from "@/lib/auth/auth-ui-provider"
  * Useful for displaying sign-in prompts or content exclusive to guests.
  */
 export function SignedOut({ children }: { children: ReactNode }) {
-    const {
-        hooks: { useSession }
-    } = useContext(AuthUIContext)
-    const { data, isPending } = useSession()
+  const {
+    hooks: { useSession },
+  } = useContext(AuthUIContext);
+  const { data, isPending } = useSession();
 
-    return !data && !isPending ? children : null
+  return !data && !isPending ? children : null;
 }
