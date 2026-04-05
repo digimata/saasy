@@ -1,14 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateMiddlewarePolicy } from "@/lib/auth/middleware-policy";
+import { decide } from "@/lib/auth/middleware";
 
-// -------------------------------------------------------------
 // projects/saasy/apps/web/tests/unit/middleware-policy.test.ts
 //
-// describe("evaluateMiddlewarePolicy")    L10
-// -------------------------------------------------------------
 
-describe("evaluateMiddlewarePolicy", () => {
+describe("decide", () => {
   it.each([
     {
       name: "redirects anonymous root requests to sign-in",
@@ -24,9 +21,22 @@ describe("evaluateMiddlewarePolicy", () => {
       },
     },
     {
-      name: "redirects anonymous setup requests to sign-in",
-      input: { pathname: "/setup", hasSessionCookie: false },
-      expected: { kind: "redirect", location: "/sign-in?redirectTo=%2Fsetup" },
+      name: "redirects anonymous onboard requests to sign-in",
+      input: { pathname: "/onboard", hasSessionCookie: false },
+      expected: { kind: "redirect", location: "/sign-in?redirectTo=%2Fonboard" },
+    },
+    {
+      name: "redirects anonymous invitation links to sign-in and preserves the invite URL",
+      input: {
+        pathname: "/accept-invitation",
+        search: "?invitationId=inv_123&redirectTo=%2Fmembers",
+        hasSessionCookie: false,
+      },
+      expected: {
+        kind: "redirect",
+        location:
+          "/sign-in?redirectTo=%2Faccept-invitation%3FinvitationId%3Dinv_123%26redirectTo%3D%252Fmembers",
+      },
     },
     {
       name: "allows anonymous sign-in entry",
@@ -49,8 +59,8 @@ describe("evaluateMiddlewarePolicy", () => {
       expected: { kind: "allow" },
     },
     {
-      name: "allows setup when a session cookie is present",
-      input: { pathname: "/setup", hasSessionCookie: true },
+      name: "allows onboard when a session cookie is present",
+      input: { pathname: "/onboard", hasSessionCookie: true },
       expected: { kind: "allow" },
     },
     {
@@ -59,6 +69,6 @@ describe("evaluateMiddlewarePolicy", () => {
       expected: { kind: "allow" },
     },
   ])("$name", ({ input, expected }) => {
-    expect(evaluateMiddlewarePolicy(input)).toEqual(expected);
+    expect(decide(input)).toEqual(expected);
   });
 });
