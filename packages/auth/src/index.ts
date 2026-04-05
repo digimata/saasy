@@ -1,35 +1,32 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { organization } from "better-auth/plugins";
+import { emailOTP, organization } from "better-auth/plugins";
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
 
 // ----------------------------
 // projects/saasy/packages/auth/src/index.ts
 //
-// const socialProviders    L15
-// export const auth        L34
-// export type Auth         L89
+// const enabledProviders   L15
+// const socialProviders    L19
+// export const auth        L42
+// export type Auth         L97
 // ----------------------------
 
-const socialProviders = {
-  ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
-    ? {
-        google: {
-          clientId: process.env.GOOGLE_CLIENT_ID,
-          clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        },
-      }
-    : {}),
-  ...(process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET
-    ? {
-        github: {
-          clientId: process.env.GITHUB_CLIENT_ID,
-          clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        },
-      }
-    : {}),
-};
+const enabledProviders = new Set(
+  (process.env.NEXT_PUBLIC_AUTH_SOCIAL_PROVIDERS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+);
+
+const providerEnv = {
+  google: { clientId: process.env.GOOGLE_CLIENT_ID ?? "", clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "" },
+  github: { clientId: process.env.GITHUB_CLIENT_ID ?? "", clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "" },
+  apple: { clientId: process.env.APPLE_CLIENT_ID ?? "", clientSecret: process.env.APPLE_CLIENT_SECRET ?? "" },
+  microsoft: { clientId: process.env.MICROSOFT_CLIENT_ID ?? "", clientSecret: process.env.MICROSOFT_CLIENT_SECRET ?? "" },
+} as const;
+
+const socialProviders = Object.fromEntries(
+  Object.entries(providerEnv).filter(([key]) => enabledProviders.has(key)),
+);
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -57,6 +54,11 @@ export const auth = betterAuth({
   },
   socialProviders,
   plugins: [
+    emailOTP({
+      sendVerificationOTP: async ({ email, otp }) => {
+        console.log(`\n🔑 OTP for ${email}: ${otp}\n`);
+      },
+    }),
     organization({
       creatorRole: "admin",
       schema: {
