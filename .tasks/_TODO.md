@@ -17,6 +17,5 @@ outline: |
 
 ## Heap
 
-- [ ] [T-0004](T-0004.md) :: Workspace CRUD + settings
 - [ ] [T-0005](T-0005.md) :: Billing stub -- Stripe customer + portal
 - [ ] [T-0006](T-0006.md) :: Wallet login + 2FA plugins
