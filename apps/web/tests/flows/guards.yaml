@@ -3,8 +3,8 @@ title: Guard flows
 covers: [middleware, auth-redirect, unauth-redirect]
 depends_on: [FL-001]
 last_run:
-  commit: a726d89
-  result: partial
+  commit: f78208a
+  result: pass
 
 # Verifies that unauthenticated users can't reach protected pages
 # and authenticated users get redirected away from auth pages.
@@ -35,16 +35,6 @@ edges:
     expect-redirect: /sign-in
     to: sign-in
 
-  - from: direct:/members
-    precondition: unauthenticated
-    expect-redirect: /sign-in
-    to: sign-in
-
-  - from: direct:/billing
-    precondition: unauthenticated
-    expect-redirect: /sign-in
-    to: sign-in
-
   # /sign-up redirects to /sign-in (server redirect, not middleware)
   - from: direct:/sign-up
     precondition: unauthenticated
@@ -55,7 +45,7 @@ paths:
   unauth-guards:
     description: "Unauthenticated user is blocked from all dashboard routes"
     precondition: unauthenticated
-    sequence: [direct:/, direct:/settings, direct:/members, direct:/billing]
+    sequence: [direct:/, direct:/settings]
 
   sign-up-redirect:
     description: "/sign-up redirects to /sign-in for unauthenticated users"

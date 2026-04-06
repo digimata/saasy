@@ -2,7 +2,7 @@ id: FL-001
 title: Auth flows
 covers: [/sign-in, /sign-up, /onboard, sign-out]
 last_run:
-  commit: a726d89
+  commit: f78208a
   result: pass
 
 # Covers the core identity paths every user hits.

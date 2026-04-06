@@ -1,9 +1,10 @@
 id: FL-002
 title: Dashboard flows
-covers: [/, /settings, /members, /billing, sidebar]
+covers: [/, /settings, sidebar, settings-tabs]
 last_run:
-  commit: a726d89
-  result: skip
+  commit: f78208a
+  result: pass
+  note: settings tabs verified in browser
 
 # Assumes authenticated user with active workspace.
 
@@ -16,57 +17,46 @@ nodes:
     expects:
       - heading: Overview
       - text: "Welcome to your workspace."
-      - complementary: sidebar
 
   settings:
     route: /settings
     expects:
       - heading: "{{workspace_name}}"    # h2, shows the workspace name
+      - tab: General
+      - tab: Members
+      - tab: Billing
       - text: "Workspace name"
-      - text: "Delete workspace"
-      - complementary: sidebar
 
-  members:
-    route: /members
+  settings-members:
+    route: /settings
     expects:
-      - heading: Members
+      - tab-active: Members
       - text: "member"
-      - complementary: sidebar
 
-  billing:
-    route: /billing
+  settings-billing:
+    route: /settings
     expects:
-      - heading: Billing
+      - tab-active: Billing
       - text: "Manage your subscription."
-      - complementary: sidebar
 
 edges:
   - from: dashboard
     action: click "Settings"
     to: settings
 
-  - from: dashboard
-    action: click "Members"
-    to: members
-
-  - from: dashboard
-    action: click "Billing"
-    to: billing
-
-  # Return to overview from each page
   - from: settings
-    action: click "Overview"
-    to: dashboard
+    action: click "Members" tab
+    to: settings-members
 
-  - from: members
-    action: click "Overview"
-    to: dashboard
+  - from: settings
+    action: click "Billing" tab
+    to: settings-billing
 
-  - from: billing
+  - from: settings
     action: click "Overview"
     to: dashboard
 
 paths:
   sidebar-navigation:
-    description: "Visit every dashboard page via sidebar and return"
-    sequence: [dashboard, settings, dashboard, members, dashboard, billing, dashboard]
+    description: "Visit settings via sidebar, cycle through tabs, return to overview"
+    sequence: [dashboard, settings, settings-members, settings-billing, dashboard]

@@ -6,14 +6,15 @@ path: projects/saasy/.tasks/_TODO.md
 outline: |
   • Saasy :: TODO      L12
     ◦ Stack            L14
-    ◦ Heap             L18
+    ◦ Heap             L20
 ---
 
 # Saasy :: TODO
 
 ## Stack
 
-- [ ] [T-0003](T-0003.md) :: Auth flows -- sign-up, sign-in, sign-out
+- [ ] [T-0011](T-0011.md) :: Fix invariant failures — sessions, slug canonicalization, membership roles
+- [ ] [T-0010](T-0010.md) :: Audit auth code — prune dead/vendored components
 
 ## Heap
 
