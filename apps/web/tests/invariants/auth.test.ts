@@ -6,7 +6,7 @@ import { accounts, db, users, verifications } from "@repo/db";
 import { and, eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { createAuthClient } from "better-auth/client";
-import { organizationClient } from "better-auth/client/plugins";
+import { emailOTPClient, organizationClient } from "better-auth/client/plugins";
 import { parseSetCookieHeader } from "better-auth/cookies";
 import { describe, expect, it } from "vitest";
 
@@ -61,7 +61,7 @@ function createCookieJar() {
 
 const client = createAuthClient({
   baseURL: "http://localhost/api/auth",
-  plugins: [organizationClient()],
+  plugins: [emailOTPClient(), organizationClient()],
   fetchOptions: {
     customFetchImpl: async (url, init) => auth.handler(new Request(url, init)),
   },

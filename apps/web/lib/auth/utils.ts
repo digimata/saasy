@@ -1,8 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import * as z from "zod";
 import type { AuthLocalization } from "@/lib/auth/localization/auth-localization";
-import type { PasswordValidation } from "@/lib/auth/types/password-validation";
 
 // ----------------------------------------------
 // projects/saasy/apps/web/lib/auth/utils.ts
@@ -22,19 +20,6 @@ import type { PasswordValidation } from "@/lib/auth/types/password-validation";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-
-export function isValidEmail(email: string) {
-  const emailRegex: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-/**
- * Converts error codes from SNAKE_CASE to camelCase
- * Example: INVALID_TWO_FACTOR_COOKIE -> invalidTwoFactorCookie
- */
-export function errorCodeToCamelCase(errorCode: string): string {
-  return errorCode.toLowerCase().replace(/_([a-z])/g, (_, char) => char.toUpperCase());
 }
 
 /**
@@ -94,36 +79,4 @@ export function getViewByPath<T extends Record<string, string>>(viewPaths: T, pa
       return key as keyof T;
     }
   }
-}
-
-export function getKeyByValue<T extends Record<string, unknown>>(
-  object: T,
-  value?: T[keyof T]
-): keyof T | undefined {
-  return (Object.keys(object) as Array<keyof T>).find((key) => object[key] === value);
-}
-
-export function getPasswordSchema(
-  passwordValidation?: PasswordValidation,
-  localization?: AuthLocalization
-) {
-  let schema = z.string().min(1, {
-    message: localization?.PASSWORD_REQUIRED,
-  });
-  if (passwordValidation?.minLength) {
-    schema = schema.min(passwordValidation.minLength, {
-      message: localization?.PASSWORD_TOO_SHORT,
-    });
-  }
-  if (passwordValidation?.maxLength) {
-    schema = schema.max(passwordValidation.maxLength, {
-      message: localization?.PASSWORD_TOO_LONG,
-    });
-  }
-  if (passwordValidation?.regex) {
-    schema = schema.regex(passwordValidation.regex, {
-      message: localization?.INVALID_PASSWORD,
-    });
-  }
-  return schema;
 }
