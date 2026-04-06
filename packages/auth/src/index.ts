@@ -5,23 +5,27 @@ import { emailOTP, organization } from "better-auth/plugins";
 
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
+import { resend, EMAIL_FROM } from "@repo/email"
+
+import OTPEmail from "@repo/email/templates/otp";
+import InvitationEmail from "@repo/email/templates/invitation";
 
 // ------------------------------
 // projects/saasy/packages/auth/src/index.ts
 //
-// const enabledProviders     L20
-// const providerEnv          L24
-// const socialProviders      L31
-// function slugify()         L35
-// export const auth          L39
-// export type Auth          L134
+// const enabledProviders     L24
+// const env                  L28
+// const socialProviders      L35
+// function slugify()         L39
+// export const auth          L43
+// export type Auth          L168
 // ------------------------------
 
 const enabledProviders = new Set(
   (process.env.NEXT_PUBLIC_AUTH_SOCIAL_PROVIDERS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
 );
 
-const providerEnv = {
+const env = {
   google: { clientId: process.env.GOOGLE_CLIENT_ID ?? "", clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "" },
   github: { clientId: process.env.GITHUB_CLIENT_ID ?? "", clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "" },
   apple: { clientId: process.env.APPLE_CLIENT_ID ?? "", clientSecret: process.env.APPLE_CLIENT_SECRET ?? "" },
@@ -29,7 +33,7 @@ const providerEnv = {
 } as const;
 
 const socialProviders = Object.fromEntries(
-  Object.entries(providerEnv).filter(([key]) => enabledProviders.has(key)),
+  Object.entries(env).filter(([key]) => enabledProviders.has(key)),
 );
 
 function slugify(slug: string) {
@@ -64,11 +68,41 @@ export const auth = betterAuth({
   plugins: [
     emailOTP({
       sendVerificationOTP: async ({ email, otp }) => {
-        console.log(`\n🔑 OTP for ${email}: ${otp}\n`);
+        if (!process.env.RESEND_API_KEY) {
+          console.log(`\n🔑 OTP for ${email}: ${otp}\n`);
+          return;
+        }
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: email,
+          subject: "Your verification code",
+          react: OTPEmail({ code: otp }),
+        });
       },
     }),
     organization({
       creatorRole: "admin",
+      sendInvitationEmail: async ({ id, email, organization, inviter, role }) => {
+        const appUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+        const acceptUrl = `${appUrl}/accept-invitation?invitationId=${id}`;
+
+        if (!process.env.RESEND_API_KEY) {
+          console.log(`\n📨 Invitation for ${email} to ${organization.name}: ${acceptUrl}\n`);
+          return;
+        }
+
+        await resend.emails.send({
+          from: EMAIL_FROM,
+          to: email,
+          subject: `Join ${organization.name}`,
+          react: InvitationEmail({
+            organizationName: organization.name,
+            inviterName: inviter.user.name ?? inviter.user.email,
+            role,
+            acceptUrl,
+          }),
+        });
+      },
       organizationHooks: {
         beforeCreateOrganization: async ({ organization }) => {
           if (!organization.slug) {
