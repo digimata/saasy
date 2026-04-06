@@ -1,4 +1,6 @@
+import { sql } from "drizzle-orm";
 import { boolean, jsonb, pgSchema, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { check } from "drizzle-orm/pg-core";
 
 // ----------------------------------
 // projects/saasy/packages/db/src/schema.ts
@@ -137,6 +139,7 @@ export const memberships = authSchema.table(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
+    validRole: check("auth_memberships_role_check", sql`${table.role} in ('admin', 'member')`),
     userWorkspaceUnique: uniqueIndex("auth_memberships_user_workspace_unique").on(
       table.userId,
       table.workspaceId
@@ -152,17 +155,23 @@ export const memberships = authSchema.table(
  *
  * See: `docs/spec/db.md` §3.6 "Invitation"
  */
-export const invitations = authSchema.table("invitations", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  workspaceId: uuid("workspace_id")
-    .notNull()
-    .references(() => workspaces.id, { onDelete: "cascade" }),
-  email: text("email").notNull(),
-  role: text("role").notNull().default("admin"),
-  status: text("status").notNull().default("pending"),
-  inviterUserId: uuid("inviter_user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-});
+export const invitations = authSchema.table(
+  "invitations",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role").notNull().default("admin"),
+    status: text("status").notNull().default("pending"),
+    inviterUserId: uuid("inviter_user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    validRole: check("auth_invitations_role_check", sql`${table.role} in ('admin', 'member')`),
+  })
+);

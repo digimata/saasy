@@ -13,8 +13,8 @@ outline: |
 
 ## Stack
 
-- [ ] [T-0011](T-0011.md) :: Fix invariant failures — sessions, slug canonicalization, membership roles
 - [ ] [T-0010](T-0010.md) :: Audit auth code — prune dead/vendored components
+- [ ] [T-0012](T-0012.md) :: Integrate Resend for transactional email
 
 ## Heap
 

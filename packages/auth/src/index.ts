@@ -1,17 +1,21 @@
+import { and, eq } from "drizzle-orm";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP, organization } from "better-auth/plugins";
+
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
 
-// ----------------------------
+// ------------------------------
 // projects/saasy/packages/auth/src/index.ts
 //
-// const enabledProviders   L15
-// const socialProviders    L19
-// export const auth        L42
-// export type Auth         L97
-// ----------------------------
+// const enabledProviders     L20
+// const providerEnv          L24
+// const socialProviders      L31
+// function slugify()         L35
+// export const auth          L39
+// export type Auth          L134
+// ------------------------------
 
 const enabledProviders = new Set(
   (process.env.NEXT_PUBLIC_AUTH_SOCIAL_PROVIDERS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
@@ -27,6 +31,10 @@ const providerEnv = {
 const socialProviders = Object.fromEntries(
   Object.entries(providerEnv).filter(([key]) => enabledProviders.has(key)),
 );
+
+function slugify(slug: string) {
+  return slug.trim().toLowerCase();
+}
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -61,6 +69,41 @@ export const auth = betterAuth({
     }),
     organization({
       creatorRole: "admin",
+      organizationHooks: {
+        beforeCreateOrganization: async ({ organization }) => {
+          if (!organization.slug) {
+            return;
+          }
+
+          return {
+            data: {
+              slug: slugify(organization.slug),
+            },
+          };
+        },
+        beforeUpdateOrganization: async ({ organization }) => {
+          if (!organization.slug) {
+            return;
+          }
+
+          return {
+            data: {
+              slug: slugify(organization.slug),
+            },
+          };
+        },
+        afterRemoveMember: async ({ member, user }) => {
+          await db
+            .update(schema.sessions)
+            .set({ activeWorkspaceId: null })
+            .where(
+              and(
+                eq(schema.sessions.userId, user.id),
+                eq(schema.sessions.activeWorkspaceId, member.organizationId)
+              )
+            );
+        },
+      },
       schema: {
         session: {
           fields: {

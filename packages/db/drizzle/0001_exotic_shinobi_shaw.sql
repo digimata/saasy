@@ -1,0 +1,2 @@
+ALTER TABLE "auth"."invitations" ADD CONSTRAINT "auth_invitations_role_check" CHECK ("auth"."invitations"."role" in ('admin', 'member'));--> statement-breakpoint
+ALTER TABLE "auth"."memberships" ADD CONSTRAINT "auth_memberships_role_check" CHECK ("auth"."memberships"."role" in ('admin', 'member'));
