@@ -7,25 +7,34 @@ import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { db } from "@repo/db";
-import { customers, subscriptions, workspaces } from "@repo/db/schema";
+const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
+const envPaths = [
+  path.join(repoRoot, ".env.local"),
+  path.join(repoRoot, "apps/web/.env.local"),
+];
 
-import { PLANS } from "../src/plans";
-import {
+for (const envPath of envPaths) {
+  if (typeof process.loadEnvFile === "function" && fs.existsSync(envPath)) {
+    process.loadEnvFile(envPath);
+  }
+}
+
+const [{ db }, { customers, subscriptions, workspaces }, { PLANS }, stripeModule, { syncSubscriptionFromStripe }] =
+  await Promise.all([
+    import("@repo/db"),
+    import("@repo/db/schema"),
+    import("../src/plans"),
+    import("../src/stripe"),
+    import("../src/webhooks"),
+  ]);
+
+const {
   createCheckoutSession,
   createPortalSession,
   ensureStripeCustomer,
   getStripe,
   getWorkspaceBillingState,
-} from "../src/stripe";
-import { syncSubscriptionFromStripe } from "../src/webhooks";
-
-const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-const envPath = path.join(repoRoot, ".env.local");
-
-if (typeof process.loadEnvFile === "function" && fs.existsSync(envPath)) {
-  process.loadEnvFile(envPath);
-}
+} = stripeModule;
 
 const runStripeSmoke =
   process.env.BILLING_STRIPE_SMOKE === "1" &&
@@ -90,7 +99,9 @@ afterEach(async () => {
 });
 
 describeStripeSmoke("live Stripe smoke", () => {
-  it("runs the real Stripe billing lifecycle against provider and local state", async function stripeLive001() {
+  it(
+    "runs the real Stripe billing lifecycle against provider and local state",
+    async function stripeLive001() {
     await ensureMigrated();
 
     const [createdWorkspace] = await db
@@ -238,5 +249,7 @@ describeStripeSmoke("live Stripe smoke", () => {
 
     expect(allLocalSubscriptions).toHaveLength(1);
     expect(allLocalSubscriptions[0]?.status).toBe("canceled");
-  });
+    },
+    120_000
+  );
 });

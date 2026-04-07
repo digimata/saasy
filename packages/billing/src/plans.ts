@@ -7,35 +7,35 @@ import { env } from "./env";
 //
 // export type PaidPlan                      L29
 // export type PlanVersion                   L30
-// type PlanEntry                            L32
-// name                                      L33
-// priceId                                   L34
-// legacyPriceIds                            L35
-// type CatalogVersion                       L38
-// plans                                     L39
+// interface PlanEntry                       L32
+//   name                                    L33
+//   priceId                                 L34
+//   legacyPriceIds                          L35
+// interface CatalogVersion                  L38
+//   plans                                   L39
 // const CATALOG                             L48
-// const CURRENT_VERSION                     L57
+// export const CURRENT_PLAN_VERSION         L57
 // export const PLANS                        L62
 // export type ResolvedPrice                 L66
 // plan                                      L67
 // version                                   L68
 // const priceIndex                          L75
-// export function resolvePrice()            L94
-// export function isBillingConfigured()    L100
-// export function canCreateCheckout()      L104
-// export function isWebhookConfigured()    L108
+// export function resolvePrice()            L95
+// export function isBillingConfigured()    L101
+// export function canCreateCheckout()      L105
+// export function isWebhookConfigured()    L109
 // ---------------------------------------------
 
 export type PaidPlan = "pro" | "ultra";
 export type PlanVersion = number;
 
-type PlanEntry = {
+interface PlanEntry {
   name: string;
   priceId: string | undefined;
   legacyPriceIds?: string[];
 };
 
-type CatalogVersion = {
+interface CatalogVersion {
   plans: Record<PaidPlan, PlanEntry>;
 };
 
@@ -74,8 +74,8 @@ export type ResolvedPrice = {
  */
 const priceIndex: Map<string, ResolvedPrice> = (() => {
   const index = new Map<string, ResolvedPrice>();
-  for (const [versionStr, catalog] of Object.entries(CATALOG)) {
-    const version = Number(versionStr);
+  for (const [ver, catalog] of Object.entries(CATALOG)) {
+    const version = Number(ver);
     for (const [plan, entry] of Object.entries(catalog.plans) as [PaidPlan, PlanEntry][]) {
       if (entry.priceId) {
         index.set(entry.priceId, { plan, version });

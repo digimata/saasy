@@ -21,6 +21,17 @@ fi
 BASE_URL="${BASE_URL:-http://localhost:3000}"
 DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:54329/saasy}"
 
+# ─── Seed fixtures ─────────────────────────────────────────
+FIXTURES_FILE="${FLOW_DIR}/fixtures.json"
+
+if [[ ! -f "$FIXTURES_FILE" ]] || [[ "${SEED:-1}" == "1" ]]; then
+  >&2 echo "[seed] running seed.sh..."
+  bash "${FLOW_DIR}/seed.sh"
+  >&2 echo ""
+fi
+
+FIXTURES=$(cat "$FIXTURES_FILE" 2>/dev/null || echo "{}")
+
 RESULT_SCHEMA='{
   "type": "object",
   "properties": {
@@ -73,6 +84,13 @@ You are a flow test runner. Read the flow file at ${FLOW_DIR}/${flow_file} and e
 - Base URL: ${BASE_URL}
 - Database: ${DATABASE_URL}
 
+## Test Fixtures
+Pre-seeded test data (from seed.sh):
+\`\`\`json
+${FIXTURES}
+\`\`\`
+Use the seeded user/workspace for paths that need an existing paid plan.
+
 ## Rules
 - You are a reporter, not a debugger.
 - Walk each path, record what happens, report results.
@@ -88,6 +106,22 @@ All interaction is via agent-browser CLI through Bash:
 - agent-browser get url — get current URL (use to verify redirects)
 - agent-browser screenshot <path> — capture screenshot
 
+Additional tools:
+- psql — query or verify database state
+- stripe — Stripe CLI for verifying live Stripe state (e.g. stripe subscriptions retrieve <id>)
+
+## Flow-Specific Instructions
+$(python3 -c "
+import yaml, sys
+with open('${FLOW_DIR}/${flow_file}') as f:
+    data = yaml.safe_load(f)
+instructions = data.get('instructions', '')
+if instructions:
+    print(instructions)
+else:
+    print('(none)')
+")
+
 ## Auth
 To sign in, use OTP flow with email. After requesting OTP, get the code from the DB:
 psql "${DATABASE_URL}" -t -A -c "SELECT split_part(value, ':', 1) FROM auth.verifications WHERE identifier = 'sign-in-otp-{email}' ORDER BY created_at DESC LIMIT 1;"
@@ -99,15 +133,16 @@ Replace {email} with the actual email used.
 
 ## Procedure
 For each path in the flow file:
-1. Set up preconditions (sign in/out as needed)
+1. Set up preconditions (sign in as the fixture user if needed)
 2. For each page in the sequence:
    a. If there's an action: execute it (click, fill+click, etc.)
    b. If page is auto: wait up to 5s, check URL with agent-browser get url
-   c. If action is direct:: use agent-browser open ${BASE_URL}<path>
+   c. If action is direct: use agent-browser open ${BASE_URL}<path>
    d. Run agent-browser snapshot
    e. Check each expects entry exists in the snapshot
    f. If any missing: agent-browser screenshot /tmp/flow-${filename}-{page}.png, record failure
-3. Move to next path
+3. After verifying UI state, also verify DB and/or Stripe state where applicable
+4. Move to next path
 
 ## Variables
 - {{run_id}} — generate a short random string (e.g. 6 hex chars) at the start of the run
@@ -140,7 +175,7 @@ for file in "${FILES[@]}"; do
   echo "$prompt" | claude --print \
     --output-format json \
     --json-schema "$RESULT_SCHEMA" \
-    --allowedTools "Bash(agent-browser:*) Bash(psql:*) Bash(openssl:*) Bash(python3:*) Read" \
+    --allowedTools "Bash(agent-browser:*) Bash(psql:*) Bash(stripe:*) Bash(openssl:*) Bash(python3:*) Read" \
     > "$result_file" 2>"$log_file" &
   PIDS+=($!)
   RUNNING=$((RUNNING + 1))

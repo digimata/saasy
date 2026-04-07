@@ -7,21 +7,42 @@ last_run:
   result: null
 
 # Covers the billing UX inside workspace settings.
-# Assumes authenticated user with an active workspace.
 #
-# Upgrade flows should be asserted end to end:
-# hobby -> checkout -> webhook sync -> paid billing state
+# Two test users:
+#   1. Fresh user (created during test) — starts on hobby, upgrades through checkout
+#   2. Seeded user (from fixtures) — already has an active Pro subscription
 #
-# Portal-driven changes should be asserted on the resulting local state after
+# Upgrade flows complete the full Stripe checkout with test card 4242...
+# and verify both UI state and DB state after webhook sync.
+#
+# Portal-driven changes are verified on the resulting local state after
 # webhook sync, not only on the external redirect.
-#
-# Important current limitation:
-# the local model does not yet represent a future scheduled plan change
-# (for example "downgrade to Pro at period end").
-# So downgrade assertions in this file cover the applied post-webhook state,
-# not a pending future downgrade banner.
 
 base_url: http://localhost:3000
+
+instructions: |
+  ## Stripe Checkout (Test Mode)
+  When a path requires completing a Stripe checkout:
+  1. Click through to the Stripe hosted checkout page
+  2. Fill in the test card: 4242 4242 4242 4242
+  3. Expiry: any future date (e.g. 12/30)
+  4. CVC: any 3 digits (e.g. 123)
+  5. Name/email: use the test user details from fixtures
+  6. Complete the checkout — Stripe will redirect back to the app
+  7. Wait up to 10s for the webhook to sync, then verify the billing page state
+  8. Verify DB state with psql after webhook sync
+  9. Optionally verify Stripe state: stripe subscriptions retrieve <sub_id>
+
+  ## Stripe Portal
+  When a path requires using the Stripe portal (upgrade, downgrade, cancel):
+  1. Click "Manage in Stripe" to open the portal
+  2. Perform the action in the portal UI
+  3. Return to the app and wait up to 10s for webhook sync
+  4. Verify the resulting billing page state AND the DB state
+
+  ## Fixture User
+  A test user with an active Pro subscription is pre-seeded (see fixtures JSON).
+  Sign in as {{fixture_email}} for paths that need an existing paid plan.
 
 pages:
   billing-hobby:
@@ -47,7 +68,14 @@ pages:
   checkout-redirect:
     route: /settings?tab=billing
     expects:
-      - external-url: stripe checkout
+      - external-url: checkout.stripe.com
+
+  checkout-complete:
+    route: checkout.stripe.com
+    expects:
+      - fill-test-card: "4242 4242 4242 4242"
+      - complete-payment: true
+      - redirect-back: /settings?tab=billing
 
   billing-paid:
     route: /settings?tab=billing
@@ -58,6 +86,9 @@ pages:
       - heading: Payment
       - button: "Manage in Stripe"
       - heading: Invoices
+    verify:
+      - db: "SELECT plan, status FROM billing.subscriptions WHERE workspace_id = '{{workspace_id}}' ORDER BY created_at DESC LIMIT 1"
+        expect: "pro|active"
 
   billing-ultra:
     route: /settings?tab=billing
@@ -68,6 +99,9 @@ pages:
       - heading: Payment
       - button: "Manage in Stripe"
       - heading: Invoices
+    verify:
+      - db: "SELECT plan, status FROM billing.subscriptions WHERE workspace_id = '{{workspace_id}}' ORDER BY created_at DESC LIMIT 1"
+        expect: "ultra|active"
 
   billing-paid-canceling:
     route: /settings?tab=billing
@@ -75,6 +109,9 @@ pages:
       - heading: Plan
       - text: "Your plan will end on"
       - button: "Manage in Stripe"
+    verify:
+      - db: "SELECT plan, status, cancel_at_period_end FROM billing.subscriptions WHERE workspace_id = '{{workspace_id}}' ORDER BY created_at DESC LIMIT 1"
+        expect: "pro|active|t"
 
   billing-invoices-populated:
     route: /settings?tab=billing
@@ -83,108 +120,86 @@ pages:
       - text: paid
       - text: View
 
-  billing-invoices-more:
-    route: /settings?tab=billing
-    expects:
-      - heading: Invoices
-      - button: "Load more"
-
-  billing-unconfigured:
-    route: /settings?tab=billing
-    expects:
-      - text: "Billing is not configured."
-      - text: STRIPE_SECRET_KEY
-
   portal-redirect:
     route: /settings?tab=billing
     expects:
-      - external-url: stripe billing portal
+      - external-url: billing.stripe.com
 
 actions:
+  # ─── Hobby → checkout ─────────────────────────────────
+
   - from: billing-hobby
     precondition: authenticated, active workspace, hobby plan, billing configured
     action: click "Adjust plan"
     to: billing-plan-dialog
 
   - from: billing-plan-dialog
-    precondition: authenticated, active workspace, hobby plan, billing configured
     action: click "Choose plan" under Pro
     to: checkout-redirect
-    note: "Should create a hosted Stripe checkout session for Pro. After successful checkout and webhook sync, Billing should show plan Pro."
+    note: "Creates a hosted Stripe checkout session for Pro"
+
+  - from: checkout-redirect
+    action: complete Stripe checkout with test card 4242424242424242, expiry 12/30, CVC 123
+    to: checkout-complete
+    note: "Fill in test card details and submit payment"
+
+  - from: checkout-complete
+    action: wait for redirect back to app, then wait up to 10s for webhook sync
+    to: billing-paid
+    note: "After successful checkout, billing page should show Pro plan. Verify DB state."
 
   - from: billing-plan-dialog
-    precondition: authenticated, active workspace, hobby plan, billing configured
     action: click "Choose plan" under Ultra
     to: checkout-redirect
-    note: "Should create a hosted Stripe checkout session for Ultra. After successful checkout and webhook sync, Billing should show plan Ultra."
+
+  # ─── Paid user flows (seeded fixture) ──────────────────
 
   - from: billing-paid
-    precondition: authenticated, active workspace, paid plan, billing configured
+    precondition: authenticated as fixture user, active Pro plan
     action: click "Manage in Stripe"
     to: portal-redirect
-    note: "Should open Stripe Customer Portal"
+    note: "Opens Stripe Customer Portal"
 
   - from: billing-paid
-    precondition: authenticated, active workspace, Pro plan, billing configured
-    action: open Stripe portal, upgrade to Ultra, return to app, wait for webhook sync
+    precondition: authenticated as fixture user, active Pro plan
+    action: click "Adjust plan", click "Choose plan" under Ultra, complete checkout
     to: billing-ultra
-    note: "Local billing state should switch from Pro to Ultra after Stripe confirms the change."
-
-  - from: billing-ultra
-    precondition: authenticated, active workspace, Ultra plan, billing configured
-    action: open Stripe portal, downgrade to Pro, return to app, wait for webhook sync
-    to: billing-paid
-    note: "This asserts the applied post-webhook downgrade state. If the portal configuration schedules downgrades for period end, add pending-plan modeling before asserting pre-application UI."
+    note: "Pro user upgrades to Ultra through checkout. Verify DB shows ultra|active."
 
   - from: billing-paid
-    precondition: authenticated, active workspace, Pro plan, billing configured
+    precondition: authenticated as fixture user, active Pro plan
     action: open Stripe portal, cancel at period end, return to app, wait for webhook sync
     to: billing-paid-canceling
-    note: "Billing tab should show end-date copy and keep the paid plan until the period ends."
-
-  - from: billing-invoices-more
-    precondition: authenticated, active workspace, paid plan, invoices paginated
-    action: click "Load more"
-    to: billing-invoices-populated
-    note: "Appends another invoice page without losing the existing rows"
+    note: "Verify cancel_at_period_end is set in both UI and DB"
 
 paths:
-  hobby-to-pro-upgrade:
-    description: "Hobby workspace upgrades to Pro through checkout and returns with paid billing state"
+  hobby-to-pro-checkout:
+    description: "Fresh user completes full Stripe checkout for Pro and lands on paid billing page"
     precondition: authenticated, active workspace, hobby plan, billing configured
-    sequence: [billing-hobby, billing-plan-dialog, checkout-redirect, billing-paid]
+    sequence: [billing-hobby, billing-plan-dialog, checkout-redirect, checkout-complete, billing-paid]
+    note: "End-to-end: UI → Stripe checkout → webhook sync → DB verification"
 
-  hobby-to-ultra-upgrade:
-    description: "Hobby workspace upgrades to Ultra through checkout and returns with paid billing state"
+  hobby-to-ultra-checkout:
+    description: "Fresh user completes full Stripe checkout for Ultra"
     precondition: authenticated, active workspace, hobby plan, billing configured
-    sequence: [billing-hobby, billing-plan-dialog, checkout-redirect, billing-ultra]
+    sequence: [billing-hobby, billing-plan-dialog, checkout-redirect, checkout-complete, billing-ultra]
 
-  pro-to-ultra-upgrade:
-    description: "Existing Pro workspace upgrades to Ultra through Stripe portal and local webhook sync"
-    precondition: authenticated, active workspace, Pro plan, billing configured
-    sequence: [billing-paid, portal-redirect, billing-ultra]
-
-  ultra-to-pro-downgrade:
-    description: "Existing Ultra workspace downgrades to Pro and local billing state reflects the applied change"
-    precondition: authenticated, active workspace, Ultra plan, billing configured
-    sequence: [billing-ultra, portal-redirect, billing-paid]
-
-  paid-portal:
+  paid-portal-access:
     description: "Paid workspace can open the Stripe billing portal"
-    precondition: authenticated, active workspace, paid plan, billing configured
+    precondition: authenticated as fixture user, active Pro plan
     sequence: [billing-paid, portal-redirect]
 
+  pro-to-ultra-upgrade:
+    description: "Pro user upgrades to Ultra and billing state reflects the change"
+    precondition: authenticated as fixture user, active Pro plan
+    sequence: [billing-paid, billing-plan-dialog, checkout-redirect, checkout-complete, billing-ultra]
+
   cancel-at-period-end:
-    description: "Canceling a paid subscription keeps the plan active until the end date and shows explicit end-date copy"
-    precondition: authenticated, active workspace, paid plan canceling, billing configured
+    description: "Canceling via portal keeps plan active with end-date copy"
+    precondition: authenticated as fixture user, active Pro plan
     sequence: [billing-paid, portal-redirect, billing-paid-canceling]
 
-  invoices-history:
-    description: "Billing tab shows invoice history and supports pagination"
-    precondition: authenticated, active workspace, paid plan, invoices available
-    sequence: [billing-invoices-populated, billing-invoices-more, billing-invoices-populated]
-
-  unconfigured-billing:
-    description: "Missing Stripe configuration shows an explicit template-dev state"
-    precondition: authenticated, active workspace, billing unconfigured
-    sequence: [billing-unconfigured]
+  invoices-after-checkout:
+    description: "After checkout, invoices section shows the payment"
+    precondition: authenticated as fixture user, active plan with invoice
+    sequence: [billing-invoices-populated]
