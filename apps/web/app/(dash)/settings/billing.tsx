@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useMemo } from "react";
 import useSWR from "swr";
+import useSWRInfinite from "swr/infinite";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlanCard } from "@/components/billing/plan-card";
 import { PaymentCard } from "@/components/billing/payment-card";
@@ -13,24 +14,25 @@ const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null)
 
 export function BillingTab() {
   const { data: state } = useSWR<BillingStateResponse>("/api/billing/state", fetcher);
-  const { data: invoiceData, mutate: mutateInvoices } =
-    useSWR<InvoicesResponse>("/api/billing/invoices", fetcher);
+  const { data: invoicePages, size, setSize } = useSWRInfinite<InvoicesResponse>(
+    (pageIndex, prev) => {
+      if (prev && !prev.hasMore) return null;
+      if (pageIndex === 0) return "/api/billing/invoices";
+      const cursor = prev!.invoices[prev!.invoices.length - 1]!.id;
+      return `/api/billing/invoices?cursor=${cursor}`;
+    },
+    fetcher,
+  );
+
+  const invoices = useMemo(
+    () => invoicePages?.flatMap((p) => p.invoices) ?? [],
+    [invoicePages],
+  );
+  const hasMore = invoicePages?.[invoicePages.length - 1]?.hasMore ?? false;
 
   const [showPlanDialog, setShowPlanDialog] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
-
-  const loadMoreInvoices = useCallback(async () => {
-    if (!invoiceData?.invoices.length) return;
-    const lastId = invoiceData.invoices[invoiceData.invoices.length - 1]!.id;
-    const res = await fetch(`/api/billing/invoices?cursor=${lastId}`);
-    if (!res.ok) return;
-    const page: InvoicesResponse = await res.json();
-    mutateInvoices(
-      { invoices: [...invoiceData.invoices, ...page.invoices], hasMore: page.hasMore },
-      false
-    );
-  }, [invoiceData, mutateInvoices]);
 
   async function handleCheckout(plan: "pro" | "ultra") {
     setCheckoutLoading(plan);
@@ -87,9 +89,9 @@ export function BillingTab() {
       {state.hasCustomer && <PaymentCard onManage={handlePortal} loading={portalLoading} />}
 
       <InvoicesCard
-        invoices={invoiceData?.invoices ?? []}
-        hasMore={invoiceData?.hasMore ?? false}
-        onLoadMore={loadMoreInvoices}
+        invoices={invoices}
+        hasMore={hasMore}
+        onLoadMore={() => setSize(size + 1)}
       />
 
       <PlanDialog
