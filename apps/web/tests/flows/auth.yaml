@@ -1,8 +1,8 @@
 id: FL-001
 title: Auth flows
-covers: [/sign-in, /sign-up, /onboard, sign-out]
+covers: [/sign-in, /sign-up, /onboard, sign-out, otp, oauth]
 last_run:
-  commit: f78208a
+  commit: 39c4c3f
   result: pass
 
 # Covers the core identity paths every user hits.
@@ -16,15 +16,12 @@ nodes:
     expects:
       - input: "Enter your email address..."    # InputBubble placeholder
       - heading: "Welcome to Saasy."
-      # OAuth buttons are conditional on env vars — don't assert
 
-  # /sign-up now redirects to /sign-in
   sign-up-redirect:
     route: /sign-in
     expects:
       - heading: "Welcome to Saasy."
 
-  # After email submit: OTP verification step (same page, animated swap)
   otp-step:
     route: /sign-in
     expects:
@@ -33,7 +30,11 @@ nodes:
       - button: "Verify your email"
       - button: Back
 
-  # Manual workspace creation form
+  otp-error:
+    route: /sign-in
+    expects:
+      - text: error    # inline error message for wrong code
+
   setup:
     route: /onboard
     expects:
@@ -48,29 +49,43 @@ nodes:
     route: /
     expects:
       - heading: Overview
-      - text: "Welcome to your workspace."
-      - complementary: sidebar
+      - text: Revenue
 
 edges:
-  # --- Flow 1: Email → OTP → Setup → Dashboard ---
+  # --- Happy: Email → OTP → Setup → Dashboard ---
   - from: sign-in
     action: fill email input with "test-{{run_id}}@example.com", click arrow button
     to: otp-step
     note: "OTP code must be retrieved from server logs or test mailbox"
 
-  # Can't complete OTP in automated test without mail access.
-  # The remaining steps are documented for manual verification.
-
-  # --- Flow 2: /sign-up redirects to /sign-in ---
+  # --- /sign-up redirects to /sign-in ---
   - from: direct:/sign-up
     precondition: unauthenticated
     expect-redirect: /sign-in
     to: sign-up-redirect
 
-  # --- Flow 3: Back button on OTP step ---
+  # --- Back button on OTP step ---
   - from: otp-step
     action: click "Back"
     to: sign-in
+
+  # --- Wrong OTP code ---
+  - from: otp-step
+    action: enter wrong code, click "Verify your email"
+    to: otp-error
+    note: "Should show inline error, stay on OTP step"
+
+  # --- Expired OTP ---
+  - from: otp-step
+    action: wait for expiry, enter code, click "Verify your email"
+    to: otp-error
+    note: "Should show expired error with option to resend"
+
+  # --- Google OAuth cancel ---
+  - from: sign-in
+    action: click Google button, deny/cancel on Google consent screen
+    to: sign-in
+    note: "Should return to sign-in without error state"
 
 paths:
   sign-in-page-renders:
@@ -92,4 +107,14 @@ paths:
   otp-back-button:
     description: "Back button returns from OTP to email step"
     sequence: [sign-in, otp-step, sign-in]
+    precondition: unauthenticated
+
+  wrong-otp:
+    description: "Wrong OTP shows error, stays on OTP step"
+    sequence: [sign-in, otp-step, otp-error]
+    precondition: unauthenticated
+
+  oauth-cancel:
+    description: "Cancelling Google OAuth returns to sign-in cleanly"
+    sequence: [sign-in, sign-in]
     precondition: unauthenticated

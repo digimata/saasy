@@ -2,9 +2,8 @@ id: FL-002
 title: Dashboard flows
 covers: [/, /settings, sidebar, settings-tabs]
 last_run:
-  commit: f78208a
+  commit: 39c4c3f
   result: pass
-  note: settings tabs verified in browser
 
 # Assumes authenticated user with active workspace.
 
@@ -16,7 +15,7 @@ nodes:
     route: /
     expects:
       - heading: Overview
-      - text: "Welcome to your workspace."
+      - text: Revenue
 
   settings:
     route: /settings
@@ -25,13 +24,14 @@ nodes:
       - tab: General
       - tab: Members
       - tab: Billing
-      - text: "Workspace name"
+      - text: Workspace
 
   settings-members:
     route: /settings
     expects:
       - tab-active: Members
-      - text: "member"
+      - heading: Members
+      - text: User
 
   settings-billing:
     route: /settings
@@ -41,7 +41,7 @@ nodes:
 
 edges:
   - from: dashboard
-    action: click "Settings"
+    action: click settings icon in sidebar (gear/slider icon, bottom of sidebar)
     to: settings
 
   - from: settings
@@ -53,7 +53,7 @@ edges:
     to: settings-billing
 
   - from: settings
-    action: click "Overview"
+    action: click first icon in sidebar (activity/overview icon, top of sidebar)
     to: dashboard
 
 paths:

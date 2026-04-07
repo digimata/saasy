@@ -3,8 +3,9 @@ title: Guard flows
 covers: [middleware, auth-redirect, unauth-redirect]
 depends_on: [FL-001]
 last_run:
-  commit: f78208a
-  result: pass
+  commit: 39c4c3f
+  result: partial
+  note: authed-away-from-auth fails — /sign-in does not redirect authenticated users
 
 # Verifies that unauthenticated users can't reach protected pages
 # and authenticated users get redirected away from auth pages.
@@ -18,13 +19,18 @@ nodes:
       - heading: "Welcome to Saasy."
       - input: "Enter your email address..."
 
+  onboard:
+    route: /onboard
+    expects:
+      - heading: "Create a workspace"
+
   dashboard:
     route: /
     expects:
       - heading: Overview
 
 edges:
-  # Unauthenticated user tries to access protected pages
+  # Unauthenticated → protected pages
   - from: direct:/
     precondition: unauthenticated
     expect-redirect: /sign-in
@@ -35,19 +41,51 @@ edges:
     expect-redirect: /sign-in
     to: sign-in
 
-  # /sign-up redirects to /sign-in (server redirect, not middleware)
+  - from: direct:/onboard
+    precondition: unauthenticated
+    expect-redirect: /sign-in
+    to: sign-in
+
+  # /sign-up redirects to /sign-in
   - from: direct:/sign-up
     precondition: unauthenticated
     expect-redirect: /sign-in
     to: sign-in
 
+  # Authenticated, no workspace → /settings should redirect to /onboard
+  - from: direct:/settings
+    precondition: authenticated, no active workspace
+    expect-redirect: /onboard
+    to: onboard
+
+  - from: direct:/
+    precondition: authenticated, no active workspace
+    expect-redirect: /onboard
+    to: onboard
+
+  # Authenticated with workspace → /sign-in should redirect to /
+  - from: direct:/sign-in
+    precondition: authenticated, active workspace
+    expect-redirect: /
+    to: dashboard
+
 paths:
   unauth-guards:
     description: "Unauthenticated user is blocked from all dashboard routes"
     precondition: unauthenticated
-    sequence: [direct:/, direct:/settings]
+    sequence: [direct:/, direct:/settings, direct:/onboard]
 
   sign-up-redirect:
     description: "/sign-up redirects to /sign-in for unauthenticated users"
     precondition: unauthenticated
     sequence: [direct:/sign-up]
+
+  no-workspace-guards:
+    description: "Authenticated user without workspace is redirected to /onboard"
+    precondition: authenticated, no active workspace
+    sequence: [direct:/, direct:/settings]
+
+  authed-away-from-auth:
+    description: "Authenticated user with workspace is redirected away from /sign-in"
+    precondition: authenticated, active workspace
+    sequence: [direct:/sign-in]
