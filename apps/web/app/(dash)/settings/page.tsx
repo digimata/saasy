@@ -19,18 +19,18 @@ export default function SettingsPage() {
   const { data: organization, isPending } = useCurrentOrganization();
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-2xl mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         {isPending ? (
           <>
-            <Skeleton className="size-10 rounded-full" />
+            <Skeleton className="size-10 rounded-[14px]" />
             <Skeleton className="h-6 w-40" />
           </>
         ) : organization ? (
           <>
             <OrganizationLogo organization={organization} size="lg" />
-            <h2 className="text-xl font-semibold">{organization.name}</h2>
+            <h2 className="text-heading-24 font-medium">{organization.name}</h2>
           </>
         ) : null}
       </div>

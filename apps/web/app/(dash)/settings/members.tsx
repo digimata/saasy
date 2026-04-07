@@ -1,23 +1,28 @@
 "use client";
 
-import { useState, useContext } from "react";
-import { Plus } from "lucide-react";
+import { useState, useContext, useCallback } from "react";
+import { toast } from "sonner";
 
 import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
 import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
+import { getLocalizedError } from "@/lib/auth/utils";
 import { InviteMemberDialog } from "@/components/auth/organization/invite-member-dialog";
-import { UserView } from "@/components/auth/user-view";
+import { IconPlus } from "@/components/ui/icons";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 export function MembersTab() {
   const {
-    hooks: { useHasPermission, useListMembers },
+    authClient,
+    hooks: { useSession, useHasPermission, useListMembers },
     organization: organizationOptions,
     localization,
+    localizeErrors,
   } = useContext(AuthUIContext);
 
+  const { data: sessionData } = useSession();
   const { data: organization, isPending: orgPending } = useCurrentOrganization();
 
   const { data: hasPermissionInvite } = useHasPermission({
@@ -32,13 +37,27 @@ export function MembersTab() {
   const members = data?.members;
 
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
-  const builtInRoles = [
-    { role: "owner", label: localization.OWNER },
-    { role: "admin", label: localization.ADMIN },
-    { role: "member", label: localization.MEMBER },
-  ];
-  const roles = [...builtInRoles, ...(organizationOptions?.customRoles || [])];
+  const currentMember = members?.find((m) => m.userId === sessionData?.user?.id);
+
+  const handleLeave = useCallback(async () => {
+    if (!organization || !currentMember || isLeaving) return;
+    setIsLeaving(true);
+    try {
+      await authClient.organization.removeMember({
+        memberIdOrEmail: currentMember.id,
+        organizationId: organization.id,
+        fetchOptions: { throw: true },
+      });
+      window.location.replace("/");
+    } catch (error) {
+      toast.error(
+        getLocalizedError({ error, localization, localizeErrors })
+      );
+      setIsLeaving(false);
+    }
+  }, [authClient, organization, currentMember, isLeaving, localization, localizeErrors]);
 
   if (orgPending) {
     return (
@@ -55,40 +74,82 @@ export function MembersTab() {
   }
 
   return (
-    <div className="space-y-4">
-      {hasPermissionInvite?.success && (
-        <div className="flex justify-end">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setInviteDialogOpen(true)}
-          >
-            <Plus className="size-4 mr-1.5" />
-            Invite
-          </Button>
+    <div className="space-y-10">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-heading-20">Members</h3>
+            <p className="text-copy-14 text-muted-foreground mt-1">
+              Manage users who have access to this organization.
+            </p>
+          </div>
+          {hasPermissionInvite?.success && (
+            <Button
+              variant="default"
+              onClick={() => setInviteDialogOpen(true)}
+              className="px-4"
+            >
+              <IconPlus className="size-3" />
+              Invite
+            </Button>
+          )}
         </div>
-      )}
 
-      <div className="space-y-2">
-        {members
-          ?.sort(
-            (a, b) =>
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          )
-          .map((member) => {
-            const role = roles.find((r) => r.role === member.role);
-            return (
-              <Card
-                key={member.id}
-                className="flex items-center justify-between p-4"
-              >
-                <UserView user={member.user} />
-                <span className="text-xs text-muted-foreground">
-                  {role?.label ?? member.role}
-                </span>
-              </Card>
-            );
-          })}
+        <div className="rounded-lg border border-ds-gray-100 overflow-hidden">
+          {/* Table header */}
+          <div className="grid grid-cols-[1fr_auto_auto] items-center px-5 py-3 text-label-13 font-medium text-foreground bg-ds-bg-300">
+            <span>User</span>
+            <span className="w-32">Joined on</span>
+            <span className="w-20" />
+          </div>
+
+          {/* Rows */}
+          {members
+            ?.sort(
+              (a, b) =>
+                new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+            )
+            .map((member) => {
+              const isCurrentUser = member.user.id === sessionData?.user?.id;
+              return (
+                <div
+                  key={member.id}
+                  className="grid grid-cols-[1fr_auto_auto] items-center px-5 py-4 border-t border-ds-gray-100"
+                >
+                  <div className="flex items-center gap-3">
+                    <Avatar className="size-8">
+                      <AvatarImage src={member.user.image || undefined} />
+                      <AvatarFallback className="text-xs bg-ds-bg-200 text-muted-foreground">
+                        {member.user.name?.[0]?.toUpperCase() || member.user.email?.[0]?.toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-label-14">
+                      {member.user.email || member.user.name}
+                    </span>
+                    {isCurrentUser && (
+                      <Badge variant="muted" className="text-label-12 font-normal bg-ds-green-500/12 border-ds-green-500/20 text-ds-green-500">
+                        You
+                      </Badge>
+                    )}
+                  </div>
+                  <span className="text-label-13 text-muted-foreground w-32">
+                    {new Date(member.createdAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <div className="w-20 flex justify-end">
+                    {isCurrentUser && member.role !== "owner" && (
+                      <Button variant="secondary" size="sm" onClick={handleLeave} disabled={isLeaving}>
+                        {isLeaving ? "Leaving..." : "Leave"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+        </div>
       </div>
 
       {organization && (

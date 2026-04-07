@@ -39,7 +39,17 @@ export function AuthProvider({
         Link={Link}
       >
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            unstyled: true,
+            classNames: {
+              toast: "w-full flex items-center gap-3 rounded-lg border border-ds-gray-100 bg-ds-bg-200 px-4 py-3 text-label-13 text-foreground shadow-lg",
+              error: "!border-red-500/20 !text-red-400",
+              success: "!border-ds-green-500/20 !text-ds-green-500",
+            },
+          }}
+        />
       </AuthUIProvider>
     </ThemeProvider>
   );

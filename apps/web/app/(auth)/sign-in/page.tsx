@@ -31,6 +31,7 @@ import {
   IconChevronLeftSmall,
   IconGoogle,
   IconGitHub,
+  IconLinkedIn,
 } from "@/components/ui/icons";
 import { Logo } from "@/components/logo";
 
@@ -145,7 +146,7 @@ function SignInContent() {
   const hasOAuth = hasGoogle || hasGitHub;
 
   return (
-    <div className="flex min-h-screen items-start justify-center bg-background">
+    <div className="flex min-h-screen items-start justify-center">
       <AnimatePresence mode="wait">
         {verifying ? (
           <motion.div
@@ -158,12 +159,12 @@ function SignInContent() {
           >
             <div className="text-center">
               <div className="mb-6 flex justify-center">
-                <Logo />
+                <Logo className="size-8" />
               </div>
-              <h1 className="text-[27px] font-medium mb-3">
+              <h1 className="text-heading-24 font-semibold mb-3">
                 Enter the code you received
               </h1>
-              <p className="text-muted-foreground text-[13.4px]">
+              <p className="text-muted-foreground text-label-13">
                 We&apos;ve sent an email with a verification code to{" "}
                 <span className="text-primary font-medium">{emailValue}</span>.
               </p>
@@ -249,9 +250,9 @@ function SignInContent() {
           >
             <div className="text-center">
               <div className="mb-6 flex justify-center">
-                <Logo />
+                <Logo className="size-8" />
               </div>
-              <h1 className="text-[27px] font-medium mb-8">
+              <h1 className="text-heading-24 font-semibold mb-8">
                 Welcome to Saasy.
               </h1>
             </div>
@@ -270,13 +271,13 @@ function SignInContent() {
                 <InputBubble
                   placeholder="Enter your email address..."
                   {...emailForm.register("email")}
-                  className={`pr-12 text-charcoal ${isValidEmail ? "border-mil-green-200" : ""}`}
+                  className={`pr-12 ${isValidEmail ? "border-ds-blue-500" : ""}`}
                 />
                 <Button
                   type="submit"
                   variant="ghost"
                   size="sm"
-                  className={`absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-charcoal-blue transition-all duration-200 ${isValidEmail ? "opacity-100" : "opacity-24"}`}
+                  className={`absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 p-0 text-ds-steel-500 transition-all duration-200 ${isValidEmail ? "opacity-100" : "opacity-24"}`}
                 >
                   <IconArrowRight className="size-3.5" />
                 </Button>
@@ -289,28 +290,28 @@ function SignInContent() {
               )}
             </form>
 
-            {hasOAuth && (
-              <div className="flex items-center space-x-4">
-                {hasGoogle && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => signInWithOAuth("google")}
-                    className="flex-1 h-10 bg-mil-green-100 hover:bg-mil-green-200 rounded-lg"
-                  >
-                    <IconGoogle />
-                  </Button>
-                )}
-                {hasGitHub && (
-                  <Button
-                    variant="ghost"
-                    onClick={() => signInWithOAuth("github")}
-                    className="flex-1 h-10 bg-mil-green-100 hover:bg-mil-green-200 rounded-lg"
-                  >
-                    <IconGitHub />
-                  </Button>
-                )}
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                onClick={() => signInWithOAuth("google")}
+                className="flex-1 h-10 bg-secondary hover:bg-secondary/80 rounded-md"
+              >
+                <IconGoogle />
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => signInWithOAuth("github")}
+                className="flex-1 h-10 bg-secondary hover:bg-secondary/80 rounded-md"
+              >
+                <IconGitHub />
+              </Button>
+              <Button
+                variant="ghost"
+                className="flex-1 h-10 bg-secondary hover:bg-secondary/80 rounded-md"
+              >
+                <IconLinkedIn />
+              </Button>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

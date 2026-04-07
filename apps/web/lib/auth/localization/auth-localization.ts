@@ -650,7 +650,7 @@ export const authLocalization = {
   MEMBER_ROLE_UPDATED: "Member role updated successfully",
 
   /** @default "Send Invitation" */
-  SEND_INVITATION: "Send Invitation",
+  SEND_INVITATION: "Invite",
 
   /** @default "Invitation sent successfully" */
   SEND_INVITATION_SUCCESS: "Invitation sent successfully",

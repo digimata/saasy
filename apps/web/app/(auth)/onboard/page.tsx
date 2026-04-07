@@ -136,10 +136,10 @@ export default function SetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between p-4">
-        <div className="flex flex-col text-[13.4px] text-muted-foreground">
+        <div className="flex flex-col text-label-13 text-muted-foreground">
           Logged in as:{" "}
           <span className="text-primary font-medium">{email}</span>
         </div>
@@ -168,7 +168,7 @@ export default function SetupPage() {
             <div className="mb-6 flex justify-center">
               <Logo />
             </div>
-            <h1 className="text-[27px] font-medium">Create a workspace</h1>
+            <h1 className="text-heading-24 font-semibold">Create a workspace</h1>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -181,7 +181,6 @@ export default function SetupPage() {
                 required
                 minLength={2}
                 maxLength={50}
-                className="text-charcoal"
                 autoComplete="off"
               />
 
@@ -194,7 +193,6 @@ export default function SetupPage() {
                 disabled={loading}
                 pattern="[a-zA-Z0-9\-]+"
                 title="Only letters, numbers, and hyphens are allowed"
-                className="text-charcoal"
                 autoComplete="off"
               />
             </div>

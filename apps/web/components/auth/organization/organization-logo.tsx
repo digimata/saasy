@@ -19,7 +19,6 @@
 "use client";
 
 import type { Organization } from "better-auth/plugins/organization";
-import { BuildingIcon } from "lucide-react";
 import { type ComponentProps, useContext, useMemo } from "react";
 
 import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
@@ -94,39 +93,68 @@ export function OrganizationLogo({
     );
   }
 
+  const sizeClass =
+    size === "sm"
+      ? "size-6"
+      : size === "lg"
+        ? "size-10"
+        : (size as string) === "xl"
+          ? "size-12"
+          : "size-8";
+
+  const textClass =
+    size === "sm"
+      ? "text-[10px]"
+      : size === "lg"
+        ? "text-base"
+        : (size as string) === "xl"
+          ? "text-lg"
+          : "text-sm";
+
+  if (src) {
+    return (
+      <Avatar
+        className={cn(
+          "bg-ds-green-500/12 rounded-[14px]",
+          sizeClass,
+          className,
+          classNames?.base
+        )}
+        {...props}
+      >
+        {avatar?.Image ? (
+          <avatar.Image
+            alt={name || localization?.ORGANIZATION}
+            className={classNames?.image}
+            src={src}
+          />
+        ) : (
+          <AvatarImage
+            alt={name || localization?.ORGANIZATION}
+            className={classNames?.image}
+            src={src}
+          />
+        )}
+
+        <AvatarFallback className={cn("text-ds-green-500 font-medium rounded-[14px]", textClass, classNames?.fallback)}>
+          {name?.[0]?.toUpperCase() || "?"}
+        </AvatarFallback>
+      </Avatar>
+    );
+  }
+
   return (
-    <Avatar
+    <div
       className={cn(
-        "bg-muted",
-        size === "sm"
-          ? "size-6"
-          : size === "lg"
-            ? "size-10"
-            : (size as string) === "xl"
-              ? "size-12"
-              : "size-8",
+        "bg-ds-green-500/12 rounded-[14px] flex items-center justify-center text-ds-green-500 font-medium shrink-0",
+        textClass,
+        sizeClass,
         className,
         classNames?.base
       )}
       {...props}
     >
-      {avatar?.Image ? (
-        <avatar.Image
-          alt={name || localization?.ORGANIZATION}
-          className={classNames?.image}
-          src={src || ""}
-        />
-      ) : (
-        <AvatarImage
-          alt={name || localization?.ORGANIZATION}
-          className={classNames?.image}
-          src={src || undefined}
-        />
-      )}
-
-      <AvatarFallback className={cn("text-foreground", classNames?.fallback)}>
-        <BuildingIcon className={cn("size-[50%]", classNames?.fallbackIcon)} />
-      </AvatarFallback>
-    </Avatar>
+      {name?.[0]?.toUpperCase() || "?"}
+    </div>
   );
 }
