@@ -89,6 +89,7 @@
 
     /* Gray */
     --ds-gray-100: oklch(95.19% 0.003 265);   /* stroke on bg-200 */
+    --ds-gray-200: oklch(96.70% 0.003 265);   /* #F3F4F6 — active pill bg */
     --ds-gray-600: oklch(48.72% 0.030 280);   /* muted-foreground */
     --ds-gray-900: oklch(30% 0.005 286);      /* secondary dark text */
     --ds-gray-1000: oklch(23.16% 0.004 286);  /* primary text */

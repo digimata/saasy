@@ -25,7 +25,7 @@ export function Sidebar() {
 
   return (
     <TooltipProvider>
-      <aside className="fixed top-[52px] left-0 bottom-0 w-14 z-40 flex flex-col items-center justify-between py-4 pb-8 bg-background">
+      <aside className="fixed top-[52px] left-0 bottom-0 w-[60px] z-40 flex flex-col items-center justify-between py-4 pb-8 bg-background pl-1">
         {/* Top: main nav */}
         <nav className="flex flex-col items-center gap-1 mt-2">
           {navItems.map((item) => {

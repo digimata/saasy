@@ -3,7 +3,7 @@ path: projects/saasy/.tasks/index.md
 outline: |
   • Saasy -- Tasks       L9
     ◦ Active            L11
-    ◦ Backlog           L17
+    ◦ Backlog           L15
 ---
 
 # Saasy -- Tasks
@@ -16,6 +16,6 @@ No active task.
 
 | Task                | Title                                    | Status  | Notes                                      |
 | ------------------- | ---------------------------------------- | ------- | ------------------------------------------ |
-| [T-0012](T-0012.md) | Integrate Resend for transactional email  | planned | Email package scaffolded, needs wiring     |
-| [T-0005](T-0005.md) | Billing stub -- Stripe customer + portal | planned | Ready after workspace/settings completion  |
+| [T-0005](T-0005.md) | Billing stub -- Stripe customer + portal | planned | Blocked on T-0004                          |
 | [T-0006](T-0006.md) | Wallet login + 2FA plugins               | planned | Revisit after workspace settings stabilize |
+| [T-0013](T-0013.md) | Design system — colors, typography, icons | planned | Geist-inspired scales + semantic tokens    |

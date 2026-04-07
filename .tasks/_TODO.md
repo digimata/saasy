@@ -13,7 +13,7 @@ outline: |
 
 ## Stack
 
-- [ ] [T-0012](T-0012.md) :: Integrate Resend for transactional email
+- [ ] [T-0013](T-0013.md) :: Design system — colors, typography, icons
 
 ## Heap
 

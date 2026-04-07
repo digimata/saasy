@@ -41,7 +41,7 @@ export function Header() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background pt-1.5 pb-0.5">
-      <div className="flex h-12 items-center px-4">
+      <div className="flex h-12 items-center px-5">
         {/* Left: workspace switcher */}
         <WorkspaceSwitcher />
 
