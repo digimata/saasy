@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
 import { OrganizationLogo } from "@/components/auth/organization/organization-logo";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,7 +16,12 @@ const tabs = [
   { id: "billing", label: "Billing" },
 ];
 
+const VALID_TABS = new Set(["general", "members", "billing"]);
+
 export default function SettingsPage() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const defaultTab = tabParam && VALID_TABS.has(tabParam) ? tabParam : "general";
   const { data: organization, isPending } = useCurrentOrganization();
 
   return (
@@ -35,7 +41,7 @@ export default function SettingsPage() {
         ) : null}
       </div>
 
-      <Tabs defaultValue="general" className="space-y-6">
+      <Tabs defaultValue={defaultTab} className="space-y-6">
         <TabsList>
           {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id}>
