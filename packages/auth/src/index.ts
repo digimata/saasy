@@ -5,7 +5,8 @@ import { emailOTP, organization } from "better-auth/plugins";
 
 import { db } from "@repo/db";
 import * as schema from "@repo/db/schema";
-import { resend, EMAIL_FROM } from "@repo/email"
+import { resend, EMAIL_FROM } from "@repo/email";
+import { isBillingConfigured, ensureStripeCustomer } from "@repo/billing";
 
 import OTPEmail from "@repo/email/templates/otp";
 import InvitationEmail from "@repo/email/templates/invitation";
@@ -125,6 +126,14 @@ export const auth = betterAuth({
               slug: slugify(organization.slug),
             },
           };
+        },
+        afterCreateOrganization: async ({ organization }) => {
+          if (!isBillingConfigured()) return;
+          try {
+            await ensureStripeCustomer(organization);
+          } catch (err) {
+            console.error("Failed to create Stripe customer for workspace:", err);
+          }
         },
         afterRemoveMember: async ({ member, user }) => {
           await db

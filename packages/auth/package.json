@@ -11,6 +11,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@repo/billing": "workspace:*",
     "@repo/db": "workspace:*",
     "@repo/email": "workspace:^",
     "better-auth": "^1.5.6",
