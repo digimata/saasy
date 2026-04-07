@@ -27,8 +27,8 @@ describe("billing plans", () => {
       STRIPE_PRICE_ULTRA: "price_ultra_v1",
     });
 
-    expect(mod.resolvePrice("price_pro_v1")).toEqual({ plan: "pro", version: 1 });
-    expect(mod.resolvePrice("price_ultra_v1")).toEqual({ plan: "ultra", version: 1 });
+    expect(mod.resolvePrice("price_pro_v1")).toEqual({ id: "pro", version: 1 });
+    expect(mod.resolvePrice("price_ultra_v1")).toEqual({ id: "ultra", version: 1 });
   });
 
   it("returns null for unknown or missing price IDs", async function plans002() {
@@ -37,7 +37,7 @@ describe("billing plans", () => {
       STRIPE_PRICE_PRO: "price_pro_v1",
     });
 
-    expect(mod.resolvePrice("price_pro_v1")).toEqual({ plan: "pro", version: 1 });
+    expect(mod.resolvePrice("price_pro_v1")).toEqual({ id: "pro", version: 1 });
     expect(mod.resolvePrice("price_unknown")).toBeNull();
   });
 

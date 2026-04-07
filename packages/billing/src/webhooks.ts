@@ -49,7 +49,7 @@ export async function syncSubscriptionFromStripe(subscription: Stripe.Subscripti
     provider: "stripe" as const,
     providerSubscriptionId: subscription.id,
     providerPriceId: priceId,
-    plan: resolved.plan,
+    plan: resolved.id,
     planVersion: resolved.version,
     status: subscription.status,
     interval: item.price.recurring?.interval ?? null,

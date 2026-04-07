@@ -6,6 +6,7 @@ describe("billing state selection", () => {
   it("prefers an active subscription over a newer canceled one", function stripe001() {
     const newerCanceled = {
       plan: "ultra",
+      planVersion: 1,
       status: "canceled",
       currentPeriodEnd: new Date("2026-05-01T00:00:00.000Z"),
       cancelAtPeriodEnd: false,
@@ -14,6 +15,7 @@ describe("billing state selection", () => {
 
     const olderActive = {
       plan: "pro",
+      planVersion: 1,
       status: "active",
       currentPeriodEnd: new Date("2026-06-01T00:00:00.000Z"),
       cancelAtPeriodEnd: true,
@@ -25,7 +27,7 @@ describe("billing state selection", () => {
 
   it("derives hobby from missing or inactive paid subscriptions", function stripe002() {
     expect(toBillingState(false, null)).toEqual({
-      plan: "hobby",
+      plan: { id: "hobby", version: 1 },
       status: null,
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
@@ -35,13 +37,14 @@ describe("billing state selection", () => {
     expect(
       toBillingState(true, {
         plan: "pro",
+        planVersion: 1,
         status: "canceled",
         currentPeriodEnd: new Date("2026-05-01T00:00:00.000Z"),
         cancelAtPeriodEnd: true,
         createdAt: new Date("2026-04-01T00:00:00.000Z"),
       })
     ).toEqual({
-      plan: "hobby",
+      plan: { id: "hobby", version: 1 },
       status: "canceled",
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
@@ -53,13 +56,14 @@ describe("billing state selection", () => {
     expect(
       toBillingState(true, {
         plan: "ultra",
+        planVersion: 1,
         status: "trialing",
         currentPeriodEnd: new Date("2026-07-01T00:00:00.000Z"),
         cancelAtPeriodEnd: false,
         createdAt: new Date("2026-04-01T00:00:00.000Z"),
       })
     ).toEqual({
-      plan: "ultra",
+      plan: { id: "ultra", version: 1 },
       status: "trialing",
       currentPeriodEnd: new Date("2026-07-01T00:00:00.000Z"),
       cancelAtPeriodEnd: false,

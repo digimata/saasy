@@ -16,9 +16,9 @@ export function PlanCard({
   state: BillingStateResponse;
   onAdjust: () => void;
 }) {
-  const plan = state.plan ?? "hobby";
-  const planName = PLAN_NAMES[plan] ?? plan;
-  const isPaid = plan !== "hobby";
+  const planId = state.plan?.id ?? "hobby";
+  const planName = PLAN_NAMES[planId] ?? planId;
+  const isPaid = planId !== "hobby";
 
   return (
     <div className="space-y-4">

@@ -39,7 +39,10 @@ export const billingStateResponseSchema = z.object({
       ultra: z.boolean(),
     })
     .optional(),
-  plan: z.enum(["hobby", "pro", "ultra"]).optional(),
+  plan: z.object({
+    id: z.enum(["hobby", "pro", "ultra"]),
+    version: z.number(),
+  }).optional(),
   status: z.string().nullable().optional(),
   currentPeriodEnd: z.string().nullable().optional(),
   cancelAtPeriodEnd: z.boolean().optional(),

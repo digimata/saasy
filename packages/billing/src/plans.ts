@@ -5,7 +5,7 @@ import { env } from "./env";
 // ---------------------------------------------
 // projects/saasy/packages/billing/src/plans.ts
 //
-// export type PaidPlan                      L29
+// export type Plan                      L29
 // export type PlanVersion                   L30
 // interface PlanEntry                       L32
 //   name                                    L33
@@ -26,8 +26,9 @@ import { env } from "./env";
 // export function isWebhookConfigured()    L109
 // ---------------------------------------------
 
-export type PaidPlan = "pro" | "ultra";
+export type PlanId = "hobby" | "pro" | "ultra";
 export type PlanVersion = number;
+export type Plan = { id: PlanId; version: PlanVersion };
 
 interface PlanEntry {
   name: string;
@@ -35,8 +36,10 @@ interface PlanEntry {
   legacyPriceIds?: string[];
 };
 
+type PaidPlanId = Exclude<PlanId, "hobby">;
+
 interface CatalogVersion {
-  plans: Record<PaidPlan, PlanEntry>;
+  plans: Record<PaidPlanId, PlanEntry>;
 };
 
 /**
@@ -63,10 +66,7 @@ export const PLANS = CATALOG[CURRENT_PLAN_VERSION]!.plans;
 
 // ─── Price resolver ───────────────────────────────────────
 
-export type ResolvedPrice = {
-  plan: PaidPlan;
-  version: PlanVersion;
-};
+export type ResolvedPrice = Plan;
 
 /**
  * Build a lookup from every known Stripe price ID (current + legacy)
@@ -76,12 +76,12 @@ const priceIndex: Map<string, ResolvedPrice> = (() => {
   const index = new Map<string, ResolvedPrice>();
   for (const [ver, catalog] of Object.entries(CATALOG)) {
     const version = Number(ver);
-    for (const [plan, entry] of Object.entries(catalog.plans) as [PaidPlan, PlanEntry][]) {
+    for (const [id, entry] of Object.entries(catalog.plans) as [PaidPlanId, PlanEntry][]) {
       if (entry.priceId) {
-        index.set(entry.priceId, { plan, version });
+        index.set(entry.priceId, { id, version });
       }
       for (const legacyId of entry.legacyPriceIds ?? []) {
-        index.set(legacyId, { plan, version });
+        index.set(legacyId, { id, version });
       }
     }
   }
@@ -102,7 +102,7 @@ export function isBillingConfigured(): boolean {
   return !!env.STRIPE_SECRET_KEY;
 }
 
-export function canCreateCheckout(plan: PaidPlan): boolean {
+export function canCreateCheckout(plan: PaidPlanId): boolean {
   return isBillingConfigured() && !!PLANS[plan].priceId;
 }
 

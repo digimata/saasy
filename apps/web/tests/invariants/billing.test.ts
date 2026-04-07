@@ -45,7 +45,7 @@ async function loadStateRoute(isBillingConfigured: boolean) {
     userId: "user_123",
   }));
   const getWorkspaceBillingState = vi.fn(async () => ({
-    plan: "pro",
+    plan: { id: "pro", version: 1 },
     status: "active",
     currentPeriodEnd: new Date("2026-06-01T00:00:00.000Z"),
     cancelAtPeriodEnd: false,

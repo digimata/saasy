@@ -15,7 +15,7 @@ async function loadBillingRoutes(options?: {
   canCreateCheckout?: boolean;
   isBillingConfigured?: boolean;
   billingState?: {
-    plan: "hobby" | "pro" | "ultra";
+    plan: { id: "hobby" | "pro" | "ultra"; version: number };
     status: string | null;
     currentPeriodEnd: Date | null;
     cancelAtPeriodEnd: boolean;
@@ -50,7 +50,7 @@ async function loadBillingRoutes(options?: {
   const getWorkspaceBillingState = vi.fn(async () => {
     return (
       options?.billingState ?? {
-        plan: "pro",
+        plan: { id: "pro", version: 1 },
         status: "active",
         currentPeriodEnd: new Date("2026-06-01T00:00:00.000Z"),
         cancelAtPeriodEnd: false,
@@ -207,7 +207,7 @@ describe("billing routes", () => {
   it("returns explicit billing state and checkout availability", async function bilRoute005() {
     const { state, getWorkspaceBillingState } = await loadBillingRoutes({
       billingState: {
-        plan: "ultra",
+        plan: { id: "ultra", version: 1 },
         status: "trialing",
         currentPeriodEnd: new Date("2026-07-01T00:00:00.000Z"),
         cancelAtPeriodEnd: true,
@@ -221,7 +221,7 @@ describe("billing routes", () => {
     await expect(response.json()).resolves.toEqual({
       configured: true,
       checkoutPlans: { pro: true, ultra: true },
-      plan: "ultra",
+      plan: { id: "ultra", version: 1 },
       status: "trialing",
       currentPeriodEnd: "2026-07-01T00:00:00.000Z",
       cancelAtPeriodEnd: true,

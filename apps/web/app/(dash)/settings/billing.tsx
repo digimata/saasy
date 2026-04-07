@@ -97,7 +97,7 @@ export function BillingTab() {
       <PlanDialog
         open={showPlanDialog}
         onOpenChange={setShowPlanDialog}
-        currentPlan={state.plan ?? "hobby"}
+        currentPlan={state.plan?.id ?? "hobby"}
         checkoutPlans={state.checkoutPlans}
         checkoutLoading={checkoutLoading}
         onCheckout={handleCheckout}

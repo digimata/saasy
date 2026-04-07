@@ -3,7 +3,7 @@ import { eq, and, desc } from "drizzle-orm";
 import { db } from "@repo/db";
 import { customers, subscriptions, type Subscription, type Workspace } from "@repo/db/schema";
 import { env } from "./env";
-import { PLANS, type PaidPlan } from "./plans";
+import { CURRENT_PLAN_VERSION, PLANS, type Plan, type PlanId } from "./plans";
 
 // ─── Client ────────────────────────────────────────────────
 
@@ -56,11 +56,11 @@ const ACTIVE_STATUSES = new Set(["active", "trialing", "past_due"]);
 
 type BillingSubscription = Pick<
   Subscription,
-  "plan" | "status" | "currentPeriodEnd" | "cancelAtPeriodEnd" | "createdAt"
+  "plan" | "planVersion" | "status" | "currentPeriodEnd" | "cancelAtPeriodEnd" | "createdAt"
 >;
 
 export type BillingState = {
-  plan: "hobby" | "pro" | "ultra";
+  plan: Plan;
   status: string | null;
   currentPeriodEnd: Date | null;
   cancelAtPeriodEnd: boolean;
@@ -77,7 +77,7 @@ export function toBillingState(
 ): BillingState {
   if (!subscription || !ACTIVE_STATUSES.has(subscription.status)) {
     return {
-      plan: "hobby",
+      plan: { id: "hobby", version: CURRENT_PLAN_VERSION },
       status: subscription?.status ?? null,
       currentPeriodEnd: null,
       cancelAtPeriodEnd: false,
@@ -86,7 +86,7 @@ export function toBillingState(
   }
 
   return {
-    plan: subscription.plan as "pro" | "ultra",
+    plan: { id: subscription.plan as PlanId, version: subscription.planVersion },
     status: subscription.status,
     currentPeriodEnd: subscription.currentPeriodEnd,
     cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
@@ -143,7 +143,7 @@ export async function ensureStripeCustomer(workspace: Pick<Workspace, "id" | "na
 
 export async function createCheckoutSession(
   workspace: Pick<Workspace, "id" | "name" | "slug">,
-  plan: PaidPlan,
+  plan: Exclude<PlanId, "hobby">,
   returnUrl: string
 ) {
   const priceId = PLANS[plan].priceId;

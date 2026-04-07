@@ -1,5 +1,5 @@
 import { sql, type InferSelectModel, type InferInsertModel } from "drizzle-orm";
-import { boolean, integer, jsonb, pgSchema, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, pgSchema, primaryKey, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { check } from "drizzle-orm/pg-core";
 
 // -----------------------------------
@@ -250,6 +250,28 @@ export const subscriptions = billingSchema.table("subscriptions", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * Tracks usage counters for limit-type entitlements.
+ * Stock features (max_projects) never reset; quota features (api_requests)
+ * lazy-reset when `reset_at` expires.
+ *
+ * See: `docs/decisions/004-entitlements.md` §4 "Usage tracking"
+ */
+export const usage = billingSchema.table(
+  "usage",
+  {
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    feature: text("feature").notNull(),
+    val: integer("val").notNull().default(0),
+    resetAt: timestamp("reset_at", { withTimezone: true }),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.workspaceId, table.feature] }),
+  })
+);
+
 // ─── Inferred Types ────────────────────────────────────────
 
 export type User = InferSelectModel<typeof users>;
@@ -264,3 +286,5 @@ export type Customer = InferSelectModel<typeof customers>;
 export type NewCustomer = InferInsertModel<typeof customers>;
 export type Subscription = InferSelectModel<typeof subscriptions>;
 export type NewSubscription = InferInsertModel<typeof subscriptions>;
+export type Usage = InferSelectModel<typeof usage>;
+export type NewUsage = InferInsertModel<typeof usage>;

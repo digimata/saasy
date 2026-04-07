@@ -42,7 +42,7 @@ function makeSelectBuilder(result: unknown) {
 
 async function loadWebhooksModule(options: {
   customerRows: unknown[];
-  priceResolver?: (priceId: string) => { plan: string; version: number } | null;
+  priceResolver?: (priceId: string) => { id: string; version: number } | null;
 }) {
   vi.resetModules();
 
@@ -68,9 +68,9 @@ async function loadWebhooksModule(options: {
     eq: vi.fn(() => Symbol("eq")),
   }));
   const defaultResolver = (priceId: string) => {
-    const map: Record<string, { plan: string; version: number }> = {
-      price_pro_v1: { plan: "pro", version: 1 },
-      price_ultra_v1: { plan: "ultra", version: 1 },
+    const map: Record<string, { id: string; version: number }> = {
+      price_pro_v1: { id: "pro", version: 1 },
+      price_ultra_v1: { id: "ultra", version: 1 },
     };
     return map[priceId] ?? null;
   };
@@ -378,9 +378,9 @@ describe("billing webhooks", () => {
     };
 
     const legacyResolver = (priceId: string) => {
-      const map: Record<string, { plan: string; version: number }> = {
-        price_pro_v2: { plan: "pro", version: 2 },
-        price_pro_v1: { plan: "pro", version: 1 },
+      const map: Record<string, { id: string; version: number }> = {
+        price_pro_v2: { id: "pro", version: 2 },
+        price_pro_v1: { id: "pro", version: 1 },
       };
       return map[priceId] ?? null;
     };

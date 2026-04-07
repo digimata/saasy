@@ -5,8 +5,9 @@ export {
   resolvePrice,
   PLANS,
   CURRENT_PLAN_VERSION,
-  type PaidPlan,
+  type PlanId,
   type PlanVersion,
+  type Plan,
   type ResolvedPrice,
 } from "./plans";
 export {
@@ -24,3 +25,12 @@ export {
   CUSTOMER_SUBSCRIPTION_UPDATED,
   CUSTOMER_SUBSCRIPTION_DELETED,
 } from "./constants";
+export {
+  getWorkspaceEntitlements,
+  entitlementsFor,
+  EntitlementError,
+  type EntitlementId,
+  type Entitlement,
+  type Entitlements,
+  type ClientEntitlements,
+} from "./entitlements";
