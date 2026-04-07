@@ -1,62 +1,73 @@
 ---
 path: projects/saasy/docs/spec/invariants.md
 outline: |
-  • System Invariants                        L55
-    ◦ Summary                                L61
-    ◦ 1. Purpose and Scope                  L102
-    ◦ 2. How to Use This Spec               L114
-    ◦ 3. ID Scheme                          L137
-    ◦ 4. Enforcement Layers                 L153
-    ◦ 5. Auth Invariants                    L167
-      ▪ INV-AUTH-001                        L169
-      ▪ INV-AUTH-002                        L192
-      ▪ INV-AUTH-003                        L218
-      ▪ INV-AUTH-004                        L241
-      ▪ INV-AUTH-005                        L263
-      ▪ INV-AUTH-006                        L286
-    ◦ 6. Workspace Invariants               L310
-      ▪ INV-WS-001                          L312
-      ▪ INV-WS-002                          L334
-      ▪ INV-WS-003                          L356
-      ▪ INV-WS-004                          L380
-      ▪ INV-WS-005                          L400
-    ◦ 7. Membership Invariants              L425
-      ▪ INV-MEM-001                         L427
-      ▪ INV-MEM-002                         L452
-      ▪ INV-MEM-003                         L474
-      ▪ INV-MEM-004                         L497
-      ▪ INV-MEM-005                         L520
-      ▪ INV-MEM-006                         L542
-    ◦ 8. Session Invariants                 L566
-      ▪ INV-SES-001                         L568
-      ▪ INV-SES-002                         L589
-      ▪ INV-SES-003                         L612
-      ▪ INV-SES-004                         L635
-      ▪ INV-SES-005                         L658
-      ▪ INV-SES-006                         L681
-      ▪ INV-SES-007                         L703
-    ◦ 9. Invitation Invariants              L726
-      ▪ INV-INV-001                         L728
-      ▪ INV-INV-002                         L749
-      ▪ INV-INV-003                         L773
-      ▪ INV-INV-004                         L795
-      ▪ INV-INV-005                         L817
-      ▪ INV-INV-006                         L858
-      ▪ INV-INV-007                         L880
-      ▪ INV-INV-008                         L902
-      ▪ INV-INV-009                         L925
-      ▪ INV-INV-010                         L946
-    ◦ 10. Verification Strategy             L969
-      ▪ Database and transaction tests      L973
-      ▪ BetterAuth integration tests        L982
-      ▪ Route and policy tests              L991
+  • System Invariants                         L66
+    ◦ Summary                                 L72
+    ◦ 1. Purpose and Scope                   L122
+    ◦ 2. How to Use This Spec                L134
+    ◦ 3. ID Scheme                           L157
+    ◦ 4. Enforcement Layers                  L174
+    ◦ 5. Auth Invariants                     L188
+      ▪ INV-AUTH-001                         L190
+      ▪ INV-AUTH-002                         L213
+      ▪ INV-AUTH-003                         L239
+      ▪ INV-AUTH-004                         L262
+      ▪ INV-AUTH-005                         L284
+      ▪ INV-AUTH-006                         L307
+    ◦ 6. Workspace Invariants                L331
+      ▪ INV-WS-001                           L333
+      ▪ INV-WS-002                           L355
+      ▪ INV-WS-003                           L377
+      ▪ INV-WS-004                           L401
+      ▪ INV-WS-005                           L421
+    ◦ 7. Membership Invariants               L446
+      ▪ INV-MEM-001                          L448
+      ▪ INV-MEM-002                          L473
+      ▪ INV-MEM-003                          L495
+      ▪ INV-MEM-004                          L518
+      ▪ INV-MEM-005                          L541
+      ▪ INV-MEM-006                          L563
+    ◦ 8. Session Invariants                  L587
+      ▪ INV-SES-001                          L589
+      ▪ INV-SES-002                          L610
+      ▪ INV-SES-003                          L633
+      ▪ INV-SES-004                          L656
+      ▪ INV-SES-005                          L679
+      ▪ INV-SES-006                          L702
+      ▪ INV-SES-007                          L724
+    ◦ 9. Invitation Invariants               L747
+      ▪ INV-INV-001                          L749
+      ▪ INV-INV-002                          L770
+      ▪ INV-INV-003                          L794
+      ▪ INV-INV-004                          L816
+      ▪ INV-INV-005                          L838
+      ▪ INV-INV-006                          L879
+      ▪ INV-INV-007                          L901
+      ▪ INV-INV-008                          L923
+      ▪ INV-INV-009                          L946
+      ▪ INV-INV-010                          L967
+    ◦ 10. Billing Invariants                 L990
+      ▪ INV-BIL-001                          L992
+      ▪ INV-BIL-002                         L1015
+      ▪ INV-BIL-003                         L1038
+      ▪ INV-BIL-004                         L1061
+      ▪ INV-BIL-005                         L1083
+      ▪ INV-BIL-006                         L1105
+      ▪ INV-BIL-007                         L1127
+      ▪ INV-BIL-008                         L1149
+      ▪ INV-BIL-009                         L1171
+    ◦ 11. Verification Strategy             L1195
+      ▪ Database and transaction tests      L1199
+      ▪ BetterAuth integration tests        L1208
+      ▪ Route and policy tests              L1217
+      ▪ Provider and webhook tests          L1226
 ---
 
 # System Invariants
 
 Last updated: `2026.04.04`
 
-> Stable correctness contracts for the Saasy control plane. These invariants define the security boundaries, uniqueness rules, referential integrity guarantees, and state-machine rules that must hold for auth, workspaces, memberships, sessions, and invitations.
+> Stable correctness contracts for the Saasy control plane. These invariants define the security boundaries, uniqueness rules, referential integrity guarantees, and state-machine rules that must hold for auth, workspaces, memberships, sessions, invitations, and billing.
 
 ## Summary
 
@@ -96,6 +107,15 @@ Last updated: `2026.04.04`
 | [INV-INV-008](#inv-inv-008) | Existing members may not gain duplicate access through invitations | `DB + App` | accept invite as existing member |
 | [INV-INV-009](#inv-inv-009) | Closed invitations stay closed | `App` | accept rejected/canceled invite |
 | [INV-INV-010](#inv-inv-010) | Invitation lookup does not leak privileged workspace data to unrelated users | `App` | unrelated-user invite probe |
+| [INV-BIL-001](#inv-bil-001) | A workspace has at most one billing customer per provider | `DB + App` | duplicate customer creation race |
+| [INV-BIL-002](#inv-bil-002) | Billing state resolves to exactly one logical plan for a workspace at a time | `DB + App` | active-plus-canceled subscription mix |
+| [INV-BIL-003](#inv-bil-003) | Stripe price IDs map to exactly one logical paid plan and plan version | `App + Test` | price rotation / legacy price replay |
+| [INV-BIL-004](#inv-bil-004) | Hosted billing routes are workspace-scoped and member-only | `Route + App` | cross-workspace checkout / portal attempt |
+| [INV-BIL-005](#inv-bil-005) | Client input may request checkout but may not set subscription truth | `Route + App` | forged plan/status mutation payload |
+| [INV-BIL-006](#inv-bil-006) | Subscription state is derived from authenticated Stripe webhook data | `App + Test` | dashboard-only subscription write attempt |
+| [INV-BIL-007](#inv-bil-007) | Webhook processing is idempotent under retries and duplicate delivery | `DB + App` | repeated event delivery |
+| [INV-BIL-008](#inv-bil-008) | Billing degrades safely when Stripe is unconfigured | `App + Route` | missing Stripe env in development |
+| [INV-BIL-009](#inv-bil-009) | Recognized legacy Stripe prices continue to resolve to the correct logical plan | `App + Test` | old subscriber after price change |
 
 ---
 
@@ -145,6 +165,7 @@ Invariant IDs are domain-prefixed and stable.
 | `INV-MEM-*` | Memberships |
 | `INV-SES-*` | Sessions |
 | `INV-INV-*` | Invitations |
+| `INV-BIL-*` | Billing |
 
 IDs should not be renumbered unless the invariant itself is removed or split.
 
@@ -966,7 +987,212 @@ Verification:
 
 ---
 
-## 10. Verification Strategy
+## 10. Billing Invariants
+
+### INV-BIL-001
+
+Title: A workspace has at most one billing customer per provider
+
+Statement:
+For a given workspace and billing provider, there must be at most one persisted customer linkage row.
+
+What breaks if violated:
+
+- Checkout and portal routing become ambiguous.
+- Webhook events may attach to the wrong local billing principal.
+- Duplicate remote customer creation becomes easier to trigger under retries or races.
+
+Enforcement:
+
+- `DB`: unique constraint on `(workspace_id, provider)`.
+- `App`: customer-ensure flow must race safely.
+
+Verification:
+
+- Fire two concurrent customer-ensure operations for the same workspace.
+- Assert one local customer row and deterministic winner selection.
+
+### INV-BIL-002
+
+Title: Billing state resolves to exactly one logical plan for a workspace at a time
+
+Statement:
+At any moment, a workspace must resolve to exactly one logical billing state: `hobby`, `pro`, or `ultra`.
+
+What breaks if violated:
+
+- Billing UI can show contradictory plan badges.
+- Entitlement checks become nondeterministic.
+- Canceled historical rows can override currently active paid state.
+
+Enforcement:
+
+- `DB`: subscription rows remain identifiable and queryable by workspace.
+- `App`: billing-state derivation must prefer the current active paid subscription over inactive history.
+
+Verification:
+
+- Create a workspace with one active paid subscription and one newer canceled row.
+- Assert derived billing state still resolves to the active paid plan.
+
+### INV-BIL-003
+
+Title: Stripe price IDs map to exactly one logical paid plan and plan version
+
+Statement:
+Every recognized Stripe `price_id` must resolve deterministically to one logical paid plan and one plan version.
+
+What breaks if violated:
+
+- Price rotations strand existing subscribers.
+- Two different plans can accidentally share one provider artifact.
+- Plan/entitlement history becomes impossible to reason about.
+
+Enforcement:
+
+- `App`: versioned plan catalog maps `price_id -> plan + version`.
+- `Test`: package tests cover current and legacy price mappings.
+
+Verification:
+
+- Resolve a current `pro` price, a current `ultra` price, and one legacy recognized price.
+- Assert each resolves to exactly one logical plan/version pair.
+
+### INV-BIL-004
+
+Title: Hosted billing routes are workspace-scoped and member-only
+
+Statement:
+Checkout and portal entrypoints may only operate on a workspace the signed-in user belongs to.
+
+What breaks if violated:
+
+- One workspace member can trigger billing flows for another workspace.
+- Unrelated users may open portal or checkout sessions for foreign accounts.
+
+Enforcement:
+
+- `Route`: handlers require a validated session.
+- `App`: handlers verify workspace membership before creating hosted sessions.
+
+Verification:
+
+- Attempt checkout and portal creation anonymously, as a non-member, and as a valid member.
+- Assert only the valid member path succeeds.
+
+### INV-BIL-005
+
+Title: Client input may request checkout but may not set subscription truth
+
+Statement:
+Dashboard requests may choose from the allowed checkout plans, but may never directly set subscription `plan`, `status`, or billing period fields.
+
+What breaks if violated:
+
+- Users can forge paid status without Stripe.
+- Local billing state stops being trustworthy.
+
+Enforcement:
+
+- `Route`: checkout handlers accept only an allowed paid plan selector.
+- `App`: subscription writes originate only from trusted Stripe webhook processing.
+
+Verification:
+
+- Send a forged dashboard request attempting to write `status=active` or `plan=ultra` directly.
+- Assert rejection and unchanged local subscription state.
+
+### INV-BIL-006
+
+Title: Subscription state is derived from authenticated Stripe webhook data
+
+Statement:
+Persisted paid subscription state must come from authenticated Stripe webhook payloads, not from redirect callbacks, browser state, or dashboard form input.
+
+What breaks if violated:
+
+- Redirect tampering can create fake upgrades.
+- Local state can diverge from the provider of record.
+
+Enforcement:
+
+- `App`: webhook handler verifies Stripe signatures before sync.
+- `Test`: route and package tests prove non-webhook surfaces cannot mutate subscription truth.
+
+Verification:
+
+- Attempt to mutate subscription state without a valid webhook signature.
+- Assert failure and no paid state change.
+
+### INV-BIL-007
+
+Title: Webhook processing is idempotent under retries and duplicate delivery
+
+Statement:
+Replaying the same Stripe subscription event must not create duplicate local subscription rows or inconsistent final state.
+
+What breaks if violated:
+
+- Retry deliveries create duplicate subscriptions.
+- Billing state becomes order-dependent and flaky.
+
+Enforcement:
+
+- `DB`: unique constraint on provider subscription identity.
+- `App`: webhook sync uses deterministic upsert semantics.
+
+Verification:
+
+- Deliver the same `customer.subscription.updated` event twice.
+- Assert one local subscription row and stable final values.
+
+### INV-BIL-008
+
+Title: Billing degrades safely when Stripe is unconfigured
+
+Statement:
+Missing Stripe configuration must disable billing functionality cleanly without breaking auth, workspace creation, or workspace settings access.
+
+What breaks if violated:
+
+- Local development and tests fail at startup.
+- Workspace management becomes coupled to provider configuration.
+
+Enforcement:
+
+- `App`: billing UI and routes expose explicit unconfigured behavior.
+- `Route`: non-billing flows do not depend on Stripe secrets being present.
+
+Verification:
+
+- Run the app without Stripe envs.
+- Assert auth and workspace flows still work and billing surfaces render an unconfigured state instead of crashing.
+
+### INV-BIL-009
+
+Title: Recognized legacy Stripe prices continue to resolve to the correct logical plan
+
+Statement:
+After price changes, previously-issued Stripe price IDs that the template still recognizes must continue to resolve to the same logical plan family.
+
+What breaks if violated:
+
+- Grandfathered subscribers fall back to `hobby` incorrectly.
+- Old paid subscribers disappear from local billing state after price rotations.
+
+Enforcement:
+
+- `App`: plan catalog retains recognized legacy price mappings.
+- `Test`: billing package tests cover legacy-price resolution and webhook sync for old prices.
+
+Verification:
+
+- Replay a webhook for a legacy recognized `pro` or `ultra` price.
+- Assert the workspace still resolves to the correct logical paid plan.
+
+---
+
+## 11. Verification Strategy
 
 These invariants should be covered in three layers.
 
@@ -996,5 +1222,14 @@ Use these for:
 - protected route redirects
 - redirect preservation via `redirectTo`
 - workspace bootstrap behavior
+
+### Provider and webhook tests
+
+Use these for:
+
+- Stripe signature verification
+- price-to-plan resolution
+- webhook retry idempotency
+- legacy-price compatibility
 
 When an invariant is especially important, cover it in more than one layer.
