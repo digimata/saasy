@@ -110,7 +110,13 @@ export function MembersTab() {
                 new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
             )
             .map((member) => {
-              const isCurrentUser = member.user.id === sessionData?.user?.id;
+              const user = member.user;
+
+              if (!user) {
+                return null;
+              }
+
+              const isCurrentUser = user.id === sessionData?.user?.id;
               return (
                 <div
                   key={member.id}
@@ -118,13 +124,13 @@ export function MembersTab() {
                 >
                   <div className="flex items-center gap-3">
                     <Avatar className="size-8">
-                      <AvatarImage src={member.user.image || undefined} />
+                      <AvatarImage src={user.image || undefined} />
                       <AvatarFallback className="text-xs bg-ds-bg-200 text-muted-foreground">
-                        {member.user.name?.[0]?.toUpperCase() || member.user.email?.[0]?.toUpperCase() || "?"}
+                        {user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || "?"}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-label-14">
-                      {member.user.email || member.user.name}
+                      {user.email || user.name}
                     </span>
                     {isCurrentUser && (
                       <Badge variant="muted" className="text-label-12 font-normal bg-ds-green-500/12 border-ds-green-500/20 text-ds-green-500">

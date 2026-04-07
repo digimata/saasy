@@ -144,7 +144,7 @@ export function OrganizationLogo({
   }
 
   return (
-    <div
+    <Avatar
       className={cn(
         "bg-ds-green-500/12 rounded-[14px] flex items-center justify-center text-ds-green-500 font-medium shrink-0",
         textClass,
@@ -154,7 +154,9 @@ export function OrganizationLogo({
       )}
       {...props}
     >
-      {name?.[0]?.toUpperCase() || "?"}
-    </div>
+      <AvatarFallback className={cn("text-ds-green-500 font-medium rounded-[14px]", textClass, classNames?.fallback)}>
+        {name?.[0]?.toUpperCase() || "?"}
+      </AvatarFallback>
+    </Avatar>
   );
 }
