@@ -15,6 +15,20 @@
       "when": 1775501732754,
       "tag": "0001_exotic_shinobi_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775591381945,
+      "tag": "0002_chemical_captain_cross",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775601364479,
+      "tag": "0003_neat_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }

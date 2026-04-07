@@ -1,19 +1,34 @@
-import { sql } from "drizzle-orm";
-import { boolean, jsonb, pgSchema, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { sql, type InferSelectModel, type InferInsertModel } from "drizzle-orm";
+import { boolean, integer, jsonb, pgSchema, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { check } from "drizzle-orm/pg-core";
 
-// ----------------------------------
+// -----------------------------------
 // projects/saasy/packages/db/src/schema.ts
 //
-// export const authSchema        L16
-// export const users             L24
-// export const workspaces        L40
-// export const sessions          L56
-// export const accounts          L78
-// export const verifications    L111
-// export const memberships      L126
-// export const invitations      L155
-// ----------------------------------
+// export const authSchema         L33
+// export const users              L41
+// export const workspaces         L57
+// export const sessions           L73
+// export const accounts           L95
+// export const verifications     L128
+// export const memberships       L143
+// export const invitations       L173
+// export const billingSchema     L196
+// export const customers         L204
+// export const subscriptions     L231
+// export type User               L254
+// export type NewUser            L255
+// export type Workspace          L256
+// export type NewWorkspace       L257
+// export type Session            L258
+// export type Account            L259
+// export type Membership         L260
+// export type Invitation         L261
+// export type Customer           L262
+// export type NewCustomer        L263
+// export type Subscription       L264
+// export type NewSubscription    L265
+// -----------------------------------
 
 export const authSchema = pgSchema("auth");
 
@@ -175,3 +190,77 @@ export const invitations = authSchema.table(
     validRole: check("auth_invitations_role_check", sql`${table.role} in ('admin', 'member')`),
   })
 );
+
+// ─── Billing ────────────────────────────────────────
+
+export const billingSchema = pgSchema("billing");
+
+/**
+ * Links a workspace to an external billing provider customer.
+ * One customer record per workspace per provider.
+ *
+ * See: `docs/spec/db.md` §4.1 "Customer"
+ */
+export const customers = billingSchema.table(
+  "customers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: uuid("workspace_id")
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    providerCustomerId: text("provider_customer_id").notNull().unique(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    workspaceProviderUnique: uniqueIndex("billing_customers_workspace_provider_unique").on(
+      table.workspaceId,
+      table.provider
+    ),
+  })
+);
+
+/**
+ * Billing-backed subscription state for a workspace.
+ * One row per Stripe subscription, updated in place from webhooks.
+ * The `hobby` (free) tier is derived from the absence of an active paid row.
+ *
+ * See: `docs/spec/db.md` §4.2 "Subscription"
+ */
+export const subscriptions = billingSchema.table("subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  workspaceId: uuid("workspace_id")
+    .notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
+  customerId: uuid("customer_id")
+    .notNull()
+    .references(() => customers.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull(),
+  providerSubscriptionId: text("provider_subscription_id").notNull().unique(),
+  providerPriceId: text("provider_price_id").notNull(),
+  plan: text("plan").notNull(),
+  planVersion: integer("plan_version").notNull().default(1),
+  status: text("status").notNull(),
+  interval: text("interval"),
+  currentPeriodStart: timestamp("current_period_start", { withTimezone: true }),
+  currentPeriodEnd: timestamp("current_period_end", { withTimezone: true }),
+  cancelAtPeriodEnd: boolean("cancel_at_period_end").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// ─── Inferred Types ────────────────────────────────────────
+
+export type User = InferSelectModel<typeof users>;
+export type NewUser = InferInsertModel<typeof users>;
+export type Workspace = InferSelectModel<typeof workspaces>;
+export type NewWorkspace = InferInsertModel<typeof workspaces>;
+export type Session = InferSelectModel<typeof sessions>;
+export type Account = InferSelectModel<typeof accounts>;
+export type Membership = InferSelectModel<typeof memberships>;
+export type Invitation = InferSelectModel<typeof invitations>;
+export type Customer = InferSelectModel<typeof customers>;
+export type NewCustomer = InferInsertModel<typeof customers>;
+export type Subscription = InferSelectModel<typeof subscriptions>;
+export type NewSubscription = InferInsertModel<typeof subscriptions>;
