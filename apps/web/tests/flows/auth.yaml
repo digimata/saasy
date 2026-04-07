@@ -10,7 +10,7 @@ last_run:
 
 base_url: http://localhost:3000
 
-nodes:
+pages:
   sign-in:
     route: /sign-in
     expects:
@@ -51,7 +51,7 @@ nodes:
       - heading: Overview
       - text: Revenue
 
-edges:
+actions:
   # --- Happy: Email → OTP → Setup → Dashboard ---
   - from: sign-in
     action: fill email input with "test-{{run_id}}@example.com", click arrow button

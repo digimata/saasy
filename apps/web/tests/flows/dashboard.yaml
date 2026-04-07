@@ -10,7 +10,7 @@ last_run:
 base_url: http://localhost:3000
 precondition: authenticated
 
-nodes:
+pages:
   dashboard:
     route: /
     expects:
@@ -37,9 +37,11 @@ nodes:
     route: /settings
     expects:
       - tab-active: Billing
-      - text: "Manage your subscription."
+      - heading: Plan
+      - button: "Adjust plan"
+      - heading: Invoices
 
-edges:
+actions:
   - from: dashboard
     action: click settings icon in sidebar (gear/slider icon, bottom of sidebar)
     to: settings

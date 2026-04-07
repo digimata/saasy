@@ -1,0 +1,95 @@
+id: FL-004
+title: Invitation flows
+covers: [/accept-invitation, invite, reject]
+depends_on: [FL-001, FL-002]
+last_run:
+  commit: null
+  result: null
+
+# Covers workspace invitation lifecycle: send, accept, reject, edge cases.
+
+base_url: http://localhost:3000
+
+pages:
+  accept-invitation:
+    route: /accept-invitation?invitationId={{invitation_id}}
+    expects:
+      - text: "{{workspace_name}}"
+      - button: Accept
+      - button: Reject
+
+  accept-invalid:
+    route: /accept-invitation?invitationId=00000000-0000-0000-0000-000000000000
+    expects:
+      - toast: error    # invitation not found
+
+  accept-missing-id:
+    route: /accept-invitation
+    expects:
+      - toast: error    # invitation not found, redirects away
+
+  dashboard:
+    route: /
+    expects:
+      - heading: Overview
+
+actions:
+  # --- Happy: accept invitation ---
+  - from: accept-invitation
+    precondition: authenticated as invited email
+    action: click "Accept"
+    to: dashboard
+    note: "User should now be a member of the workspace"
+
+  # --- Reject invitation ---
+  - from: accept-invitation
+    precondition: authenticated as invited email
+    action: click "Reject"
+    expect-redirect: /
+    to: dashboard
+    note: "Invitation status should be rejected in DB"
+
+  # --- Invalid invitation ID ---
+  - from: accept-invalid
+    precondition: authenticated
+    to: accept-invalid
+    note: "Should show error toast, not crash"
+
+  # --- Missing invitation ID ---
+  - from: accept-missing-id
+    precondition: authenticated
+    to: accept-missing-id
+    note: "Should show error and redirect"
+
+  # --- Wrong user accepts ---
+  - from: accept-invitation
+    precondition: authenticated as different email
+    action: click "Accept"
+    note: "Should show error — email mismatch"
+
+  # --- Re-invite after rejection ---
+  - from: settings-members
+    precondition: authenticated as admin, previous invite rejected
+    action: invite same email again
+    note: "Should create new invitation, send new email"
+
+paths:
+  accept-happy:
+    description: "Invited user clicks accept → joins workspace"
+    precondition: authenticated as invited email
+    sequence: [accept-invitation, dashboard]
+
+  reject-happy:
+    description: "Invited user clicks reject → returns to dashboard"
+    precondition: authenticated as invited email
+    sequence: [accept-invitation, dashboard]
+
+  invalid-invitation:
+    description: "Invalid invitation ID shows error"
+    precondition: authenticated
+    sequence: [accept-invalid]
+
+  missing-invitation-id:
+    description: "No invitationId param shows error and redirects"
+    precondition: authenticated
+    sequence: [accept-missing-id]

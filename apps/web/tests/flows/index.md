@@ -1,7 +1,8 @@
 ---
 path: projects/saasy/apps/web/tests/flows/index.md
 outline: |
-  • Flow Tests      L7
+  • Flow Tests                       L8
+    ◦ OTP retrieval (dev only)      L18
 ---
 
 # Flow Tests
@@ -12,6 +13,7 @@ outline: |
 | FL-002 | [Dashboard flows](dashboard.yaml) | /, /settings, sidebar, settings-tabs | — | 39c4c3f | pass |
 | FL-003 | [Guard flows](guards.yaml) | middleware, auth-redirect, unauth-redirect | FL-001 | 39c4c3f | partial |
 | FL-004 | [Invitation flows](invitations.yaml) | /accept-invitation, invite, reject | FL-001, FL-002 | — | — |
+| FL-005 | [Billing flows](billing.yaml) | /settings?tab=billing, checkout, portal, invoices | FL-001, FL-002 | — | — |
 
 ## OTP retrieval (dev only)
 
