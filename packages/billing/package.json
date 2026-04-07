@@ -1,0 +1,23 @@
+{
+  "name": "@repo/billing",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit",
+    "test": "vitest run",
+    "test:stripe-live": "BILLING_STRIPE_SMOKE=1 vitest run tests/stripe-live.test.ts"
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "stripe": "^18.1.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.2"
+  }
+}
