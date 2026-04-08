@@ -1,12 +1,21 @@
 ---
-id: iss-0001
+id: iss-0002
 title: "Webhook cancel state not syncing to local DB"
 status: proposed
 priority: high
 labels: [billing, bug]
+path: projects/saasy/.issues/iss-0002-cancel-sync.md
+outline: |
+  • iss-0002: Webhook cancel state not syncing to local DB      L18
+    ◦ Summary                                                   L20
+    ◦ Observed                                                  L24
+    ◦ Expected                                                  L33
+    ◦ Likely cause                                              L38
+    ◦ Reproduction                                              L45
+    ◦ Source                                                    L51
 ---
 
-# iss-0001: Webhook cancel state not syncing to local DB
+# iss-0002: Webhook cancel state not syncing to local DB
 
 ## Summary
 
