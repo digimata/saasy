@@ -56,18 +56,27 @@ outline: |
       ▪ INV-BIL-007                         L1127
       ▪ INV-BIL-008                         L1149
       ▪ INV-BIL-009                         L1171
-    ◦ 11. Verification Strategy             L1195
-      ▪ Database and transaction tests      L1199
-      ▪ BetterAuth integration tests        L1208
-      ▪ Route and policy tests              L1217
-      ▪ Provider and webhook tests          L1226
+    ◦ 11. Entitlement Invariants           L1195
+      ▪ INV-ENT-001                        L1197
+      ▪ INV-ENT-002                        L1218
+      ▪ INV-ENT-003                        L1240
+      ▪ INV-ENT-004                        L1261
+      ▪ INV-ENT-005                        L1284
+      ▪ INV-ENT-006                        L1307
+      ▪ INV-ENT-007                        L1329
+    ◦ 12. Verification Strategy            L1353
+      ▪ Database and transaction tests     L1357
+      ▪ BetterAuth integration tests       L1366
+      ▪ Route and policy tests             L1375
+      ▪ Provider and webhook tests         L1384
+      ▪ Entitlement tests                  L1393
 ---
 
 # System Invariants
 
-Last updated: `2026.04.04`
+Last updated: `2026.04.07`
 
-> Stable correctness contracts for the Saasy control plane. These invariants define the security boundaries, uniqueness rules, referential integrity guarantees, and state-machine rules that must hold for auth, workspaces, memberships, sessions, invitations, and billing.
+> Stable correctness contracts for the Saasy control plane. These invariants define the security boundaries, uniqueness rules, referential integrity guarantees, and state-machine rules that must hold for auth, workspaces, memberships, sessions, invitations, billing, and entitlements.
 
 ## Summary
 
@@ -116,6 +125,13 @@ Last updated: `2026.04.04`
 | [INV-BIL-007](#inv-bil-007) | Webhook processing is idempotent under retries and duplicate delivery | `DB + App` | repeated event delivery |
 | [INV-BIL-008](#inv-bil-008) | Billing degrades safely when Stripe is unconfigured | `App + Route` | missing Stripe env in development |
 | [INV-BIL-009](#inv-bil-009) | Recognized legacy Stripe prices continue to resolve to the correct logical plan | `App + Test` | old subscriber after price change |
+| [INV-ENT-001](#inv-ent-001) | Plan and plan version resolve to exactly one entitlement set | `App + Test` | same input same entitlements |
+| [INV-ENT-002](#inv-ent-002) | A workspace resolves to exactly one effective entitlement set at a time | `App + Test` | hobby fallback vs active paid plan |
+| [INV-ENT-003](#inv-ent-003) | Server-side entitlement enforcement is authoritative | `App + Route` | UI-only gate bypass attempt |
+| [INV-ENT-004](#inv-ent-004) | Stock limits are enforced against canonical resource state | `App + DB` | over-limit create in same transaction |
+| [INV-ENT-005](#inv-ent-005) | Quota resets follow billing period boundaries deterministically | `App + DB` | reset-at rollover and period update |
+| [INV-ENT-006](#inv-ent-006) | Downgrades do not delete existing resources, but block further expansion past the new limit | `App + Test` | over-limit downgrade expansion attempt |
+| [INV-ENT-007](#inv-ent-007) | Unknown entitlement inputs fail closed | `App + Test` | unknown plan version or entitlement ID |
 
 ---
 
@@ -166,6 +182,7 @@ Invariant IDs are domain-prefixed and stable.
 | `INV-SES-*` | Sessions |
 | `INV-INV-*` | Invitations |
 | `INV-BIL-*` | Billing |
+| `INV-ENT-*` | Entitlements |
 
 IDs should not be renumbered unless the invariant itself is removed or split.
 
@@ -1192,7 +1209,165 @@ Verification:
 
 ---
 
-## 11. Verification Strategy
+## 11. Entitlement Invariants
+
+### INV-ENT-001
+
+Title: Plan and plan version resolve to exactly one entitlement set
+
+Statement:
+For any recognized `(plan, plan_version)` pair, entitlement resolution must be deterministic and return exactly one entitlement set.
+
+What breaks if violated:
+
+- Feature access becomes nondeterministic.
+- Limits may vary for the same subscriber without any billing change.
+
+Enforcement:
+
+- `App`: static entitlement matrix keyed by plan version and plan.
+- `Test`: pure entitlement resolution tests.
+
+Verification:
+
+- Resolve entitlements for the same `(plan, version)` pair multiple times.
+- Assert the resulting values are identical.
+
+### INV-ENT-002
+
+Title: A workspace resolves to exactly one effective entitlement set at a time
+
+Statement:
+At any moment, a workspace must resolve to exactly one effective entitlement set derived from its current logical billing state.
+
+What breaks if violated:
+
+- UI and API may disagree about available features.
+- A workspace can appear to have contradictory limits.
+
+Enforcement:
+
+- `App`: workspace entitlement resolution uses one billing state result.
+- `Test`: workspace entitlement tests cover hobby fallback and active paid plans.
+
+Verification:
+
+- Resolve entitlements for a hobby workspace, then for the same workspace with an active paid subscription.
+- Assert each state produces one coherent entitlement set.
+
+### INV-ENT-003
+
+Title: Server-side entitlement enforcement is authoritative
+
+Statement:
+Client UI may hide or disable features, but only server-side entitlement checks may authorize protected actions.
+
+What breaks if violated:
+
+- Users can bypass UI gating and invoke restricted actions directly.
+
+Enforcement:
+
+- `App`: server handlers use `check()` or `consume()` before protected writes.
+- `Route`: routes do not trust client-provided entitlement state.
+
+Verification:
+
+- Attempt a protected action through a direct request while the client would normally hide it.
+- Assert the server still rejects it.
+
+### INV-ENT-004
+
+Title: Stock limits are enforced against canonical resource state
+
+Statement:
+Stock limits such as projects or members must be enforced against canonical resource tables, not against drift-prone shadow counters.
+
+What breaks if violated:
+
+- Entitlement usage can drift from the real owned resources.
+- Valid creates can be blocked or invalid creates allowed.
+
+Enforcement:
+
+- `App`: stock-limit checks run inside the same transaction as the guarded write.
+- `DB`: canonical resource tables remain the source of truth for current stock counts.
+
+Verification:
+
+- Simulate a create at the stock limit boundary.
+- Assert the create is rejected based on canonical count, not a stale side counter.
+
+### INV-ENT-005
+
+Title: Quota resets follow billing period boundaries deterministically
+
+Statement:
+Quota-style entitlements must reset according to the billing period boundary and update when the billing period changes.
+
+What breaks if violated:
+
+- Quotas can stay exhausted after renewal.
+- Upgrades or downgrades can leave reset windows inconsistent with the active subscription.
+
+Enforcement:
+
+- `App`: quota usage tracks `reset_at` from the billing period end.
+- `DB`: quota rows store reset timestamps explicitly.
+
+Verification:
+
+- Advance a quota row past `reset_at` and assert lazy reset behavior.
+- Change the billing period end and assert subsequent quota checks use the new boundary.
+
+### INV-ENT-006
+
+Title: Downgrades do not delete existing resources, but block further expansion past the new limit
+
+Statement:
+When a workspace downgrades below its current stock usage, existing resources remain, but any further expansion beyond the new cap must fail.
+
+What breaks if violated:
+
+- Downgrades become destructive.
+- Over-limit downgraded workspaces can continue growing indefinitely.
+
+Enforcement:
+
+- `App`: stock limit checks compare future growth against the new cap.
+- `Test`: pure and integration tests cover over-limit downgrade behavior.
+
+Verification:
+
+- Start with usage allowed on a higher plan.
+- Downgrade to a lower plan below current usage.
+- Assert existing usage remains represented, but another create is rejected.
+
+### INV-ENT-007
+
+Title: Unknown entitlement inputs fail closed
+
+Statement:
+Unknown entitlement IDs, unknown plans, or unknown plan versions must fail closed rather than silently returning permissive defaults.
+
+What breaks if violated:
+
+- Typos or catalog drift can accidentally grant access.
+- Old and new code paths may disagree silently.
+
+Enforcement:
+
+- `App`: entitlement resolution throws for unknown identifiers.
+- `Test`: package tests exercise unknown inputs explicitly.
+
+Verification:
+
+- Attempt to resolve an unknown plan version or entitlement ID.
+- Assert an explicit failure rather than a permissive fallback.
+
+---
+
+## 12. Verification Strategy
 
 These invariants should be covered in three layers.
 
@@ -1231,5 +1406,14 @@ Use these for:
 - price-to-plan resolution
 - webhook retry idempotency
 - legacy-price compatibility
+
+### Entitlement tests
+
+Use these for:
+
+- pure plan/version entitlement resolution
+- fail-closed behavior for unknown IDs or versions
+- downgrade expansion checks
+- quota reset semantics
 
 When an invariant is especially important, cover it in more than one layer.

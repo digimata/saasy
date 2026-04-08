@@ -45,8 +45,8 @@ Two types of entitlements:
 
 | Type | Definition | Example |
 |---|---|---|
-| **Flag** | `{ type: "flag", value: boolean }` | `api_access`, `custom_domains` |
-| **Limit** | `{ type: "limit", value: number | null }` | `max_projects`, `max_members` |
+| **Flag** | `{ kind: "flag", value: boolean }` | `api_access`, `custom_domains` |
+| **Limit** | `{ kind: "limit", value: number | null }` | `max_projects`, `max_members` |
 
 For limits, `null` means unlimited (no cap enforced).
 
@@ -61,21 +61,22 @@ Two kinds of limits by lifecycle:
 
 ## 3. Entitlement matrix
 
-Defined statically in `@repo/billing` alongside the plan catalog. Keyed by `(version, plan, entitlementId)`:
+Defined statically in `@repo/billing` alongside the plan catalog. Keyed by `(version, planId, entitlementId)`:
 
 ```typescript
-type Plan = "hobby" | PaidPlan;  // "hobby" | "pro" | "ultra"
+type PlanId = "hobby" | "pro" | "ultra"
+type Plan = { id: PlanId; version: PlanVersion }
 type EntitlementId = "max_projects" | "max_members" | "api_access" | ...;
 type Entitlement =
-  | { type: "flag"; value: boolean }
-  | { type: "limit"; value: number | null };
+  | { kind: "flag"; value: boolean }
+  | { kind: "limit"; value: number | null };
 
-const ENTITLEMENTS: Record<PlanVersion, Record<Plan, Record<EntitlementId, Entitlement>>> = {
+const ENTITLEMENTS: Record<PlanVersion, Record<PlanId, Record<EntitlementId, Entitlement>>> = {
   1: {
     hobby: {
-      max_projects:  { type: "limit", value: 3 },
-      max_members:   { type: "limit", value: 2 },
-      api_access:    { type: "flag",  value: false },
+      max_projects:  { kind: "limit", value: 3 },
+      max_members:   { kind: "limit", value: 2 },
+      api_access:    { kind: "flag",  value: false },
     },
     pro: { ... },
     ultra: { ... },
@@ -101,7 +102,7 @@ Canonical stock resources like projects or members do not use `billing.usage` as
 CREATE TABLE billing.usage (
   workspace_id   uuid        NOT NULL REFERENCES auth.workspaces(id) ON DELETE CASCADE,
   feature        text        NOT NULL,
-  count          integer     NOT NULL DEFAULT 0,
+  val            integer     NOT NULL DEFAULT 0,
   reset_at       timestamptz,  -- null = stock (never resets), set = quota (resets at this time)
   PRIMARY KEY (workspace_id, feature)
 );
@@ -111,11 +112,11 @@ For tracked counters, `consume` uses an atomic check-and-increment:
 
 ```sql
 UPDATE billing.usage
-SET count = count + $increment
+SET val = val + $increment
 WHERE workspace_id = $1
   AND feature = $2
-  AND (count + $increment) <= $limit
-RETURNING count;
+  AND (val + $increment) <= $limit
+RETURNING val;
 -- 0 rows affected → at limit → throw EntitlementError
 ```
 
@@ -151,14 +152,14 @@ This avoids drift between entitlement enforcement state and the actual resources
 const e = await getWorkspaceEntitlements(workspaceId);
 
 // Client-side: pure, from known billing state
-const e = entitlementsFor(plan, planVersion);
+const e = entitlementsFor({ id: planId, version: planVersion });
 ```
 
 ### Query methods (pure, sync)
 
 ```typescript
 e.has("api_access")                    // → boolean — is this flag enabled?
-e.has("max_projects", { used: 2 })     // → boolean — is another project allowed?
+e.has("max_projects", 2)               // → boolean — is another project allowed?
 e.value("max_projects")                // → number | null — what's the configured cap?
 ```
 
@@ -166,16 +167,16 @@ e.value("max_projects")                // → number | null — what's the confi
 
 ```typescript
 e.check("api_access")                   // throws if disabled
-e.check("max_projects", { used: 20 })   // throws if another project is not allowed
+e.check("max_projects", 20)             // throws if another project is not allowed
 ```
 
 ### Mutation methods (async, hit DB)
 
 ```typescript
-await e.consume("api_requests")                 // increment by 1, throw if at limit
-await e.consume("api_requests", { amount: 5 }) // increment by N
-await e.release("api_requests")                 // decrement by 1
-await e.release("api_requests", { amount: 5 }) // decrement by N
+await e.consume("api_requests")     // increment by 1, throw if at limit
+await e.consume("api_requests", 5)  // increment by N
+await e.release("api_requests")     // decrement by 1
+await e.release("api_requests", 5)  // decrement by N
 ```
 
 ### Read usage (async)
@@ -188,11 +189,11 @@ await e.usage("api_requests")   // → number — current tracked usage
 
 ## 6. Client-side access
 
-The pure `entitlementsFor(plan, planVersion)` function is exported from `@repo/billing` with no DB dependencies. It returns the same `Entitlements` interface minus the async methods (`consume`, `release`, `usage`). Callers still use entitlement IDs; only the implementation knows which IDs are flags vs limits.
+The pure `entitlementsFor(plan)` function is exported from `@repo/billing` with no DB dependencies. It returns the same `Entitlements` interface minus the async methods (`consume`, `release`, `usage`). Callers still use entitlement IDs; only the implementation knows which IDs are flags vs limits.
 
 ```typescript
 const { plan, planVersion } = useBillingState();
-const e = entitlementsFor(plan, planVersion);
+const e = entitlementsFor({ id: plan, version: planVersion });
 
 if (!e.has("api_access")) {
   // show upgrade prompt
@@ -236,7 +237,7 @@ export const usage = billingSchema.table("usage", {
     .notNull()
     .references(() => workspaces.id, { onDelete: "cascade" }),
   feature: text("feature").notNull(),
-  count: integer("count").notNull().default(0),
+  val: integer("val").notNull().default(0),
   resetAt: timestamp("reset_at", { withTimezone: true }),
 }, (table) => ({
   pk: primaryKey({ columns: [table.workspaceId, table.feature] }),

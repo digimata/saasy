@@ -1,10 +1,49 @@
 import { eq, and, sql } from "drizzle-orm";
+
 import { db } from "@repo/db";
 import { usage } from "@repo/db/schema";
+
 import { CURRENT_PLAN_VERSION, type Plan, type PlanId, type PlanVersion } from "./plans";
 import { getWorkspaceBillingState } from "./stripe";
 
 // ─── Types ───────────────────────────────────────────────
+
+// --------------------------------------------------------
+// projects/saasy/packages/billing/src/entitlements.ts
+//
+// export type EntitlementId                            L48
+// export type Entitlement                              L50
+// kind                                                 L51
+// value                                                L51
+// kind                                                 L52
+// value                                                L52
+// type EntitlementMatrix                               L54
+// const ENTITLEMENTS                                   L58
+// export class EntitlementError                        L83
+//   constructor()                                      L84
+// export interface Entitlements                       L100
+//   readonly plan                                     L101
+//   has()                                             L108
+//   value()                                           L111
+//   check()                                           L117
+//   usage()                                           L120
+//   consume()                                         L123
+//   release()                                         L126
+// export type ClientEntitlements                      L130
+// class PureEntitlements                              L134
+//   constructor()                                     L135
+//   has()                                             L137
+//   value()                                           L145
+//   check()                                           L149
+// class ServerEntitlements                            L165
+//   constructor()                                     L166
+//   async usage()                                     L173
+//   async consume()                                   L182
+//   async release()                                   L212
+// export function entitlementsFor()                   L223
+// export async function getWorkspaceEntitlements()    L228
+// function resolve()                                  L235
+// --------------------------------------------------------
 
 export type EntitlementId = "max_projects" | "max_members" | "api_access" | "custom_domains";
 
@@ -54,18 +93,6 @@ export class EntitlementError extends Error {
     super(msg);
     this.name = "EntitlementError";
   }
-}
-
-// ─── Helpers ─────────────────────────────────────────────
-
-function resolve(plan: Plan, id: EntitlementId): Entitlement {
-  const v = ENTITLEMENTS[plan.version];
-  if (!v) throw new Error(`Unknown plan version: ${plan.version}`);
-  const p = v[plan.id];
-  if (!p) throw new Error(`Unknown plan: ${plan.id}`);
-  const e = p[id];
-  if (!e) throw new Error(`Unknown entitlement: ${id}`);
-  return e;
 }
 
 // ─── Entitlements interface ──────────────────────────────
@@ -201,4 +228,16 @@ export function entitlementsFor(plan: Plan): ClientEntitlements {
 export async function getWorkspaceEntitlements(workspaceId: string): Promise<Entitlements> {
   const billing = await getWorkspaceBillingState(workspaceId);
   return new ServerEntitlements(billing.plan, workspaceId);
+}
+
+// ─── Helpers ─────────────────────────────────────────────
+
+function resolve(plan: Plan, id: EntitlementId): Entitlement {
+  const v = ENTITLEMENTS[plan.version];
+  if (!v) throw new Error(`Unknown plan version: ${plan.version}`);
+  const p = v[plan.id];
+  if (!p) throw new Error(`Unknown plan: ${plan.id}`);
+  const e = p[id];
+  if (!e) throw new Error(`Unknown entitlement: ${id}`);
+  return e;
 }

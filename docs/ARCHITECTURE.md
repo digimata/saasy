@@ -146,3 +146,6 @@ Architectural decisions are recorded in [`docs/decisions/`](decisions/).
 | ADR-001 | [BetterAuth over Clerk/WorkOS](decisions/001-betterauth.md)    | 2026-04-04 |
 | ADR-002 | [Drizzle over Prisma](decisions/002-drizzle.md)                | 2026-04-04 |
 | ADR-003 | [Custom PG schema via search_path](decisions/003-pg-schema.md) | 2026-04-04 |
+| ADR-004 | [Feature entitlements](decisions/004-entitlements.md)          | 2026-04-07 |
+| ADR-005 | [Workspace-scoped Stripe billing control plane](decisions/005-billing-control-plane.md) | 2026-04-07 |
+| ADR-006 | [Negative-evidence middleware and validated-session authorization](decisions/006-middleware-authorization.md) | 2026-04-07 |
