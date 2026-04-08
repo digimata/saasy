@@ -95,7 +95,7 @@ export default function SetupPage() {
         fetchOptions: { throw: true },
       });
 
-      window.location.replace("/");
+      window.location.replace(`/${trimmedSlug}`);
     } catch {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);

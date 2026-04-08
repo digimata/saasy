@@ -1,7 +1,7 @@
 "use client";
 
+import { useCallback, useContext } from "react";
 import { IconChevronUpDown } from "@/components/ui/icons";
-import { useContext } from "react";
 
 import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
 import { useBillingState } from "@/hooks/_/use-billing-state";
@@ -12,10 +12,20 @@ import { PLAN_BADGE } from "@/components/billing/plan-card";
 import { Logo } from "@/components/logo";
 
 export function WorkspaceSwitcher() {
+  const { navigate } = useContext(AuthUIContext);
   const { data: organization, isPending } = useCurrentOrganization();
   const { data: billing } = useBillingState();
   const planId = billing?.plan?.id ?? "hobby";
-  const badge = PLAN_BADGE[planId] ?? PLAN_BADGE.hobby;
+  const badge = PLAN_BADGE[planId] ?? { label: "Hobby", variant: "muted" as const };
+
+  const handleSetActive = useCallback(
+    (org: { slug?: string | null } | null) => {
+      if (org?.slug) {
+        navigate(`/${org.slug}`);
+      }
+    },
+    [navigate],
+  );
 
   return (
     <div className="flex items-center gap-2">
@@ -36,6 +46,7 @@ export function WorkspaceSwitcher() {
           </Badge>
           <OrganizationSwitcher
             hidePersonal
+            onSetActive={handleSetActive}
             align="start"
             alignOffset={-8}
             side="bottom"

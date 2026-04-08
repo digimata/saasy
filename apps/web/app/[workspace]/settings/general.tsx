@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useContext } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
+import { useWorkspaceSlug } from "@/lib/workspace-context";
 import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 import { getLocalizedError } from "@/lib/auth/utils";
 import { DeleteOrganizationDialog } from "@/components/auth/organization/delete-organization-dialog";
@@ -43,6 +45,8 @@ function SettingsSection({
 }
 
 export function GeneralTab() {
+  const router = useRouter();
+  const currentSlug = useWorkspaceSlug();
   const {
     hooks: { useHasPermission },
     mutators: { updateOrganization },
@@ -87,12 +91,16 @@ export function GeneralTab() {
 
     setIsUpdating(true);
     try {
+      const newSlug = slugify(name);
       await updateOrganization({
         organizationId: organization.id,
-        data: { name, slug: slugify(name) },
+        data: { name, slug: newSlug },
       });
       await refetchOrganization?.();
       toast.success("Workspace updated");
+      if (newSlug !== currentSlug) {
+        router.replace(`/${newSlug}/settings`);
+      }
     } catch (error) {
       toast.error(
         getLocalizedError({ error, localization, localizeErrors })

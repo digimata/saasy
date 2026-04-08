@@ -174,7 +174,7 @@ describe("billing routes", () => {
     expect(createCheckoutSession).toHaveBeenCalledWith(
       { id: "ws_123", name: "Acme", slug: "acme" },
       "pro",
-      "http://localhost/settings?tab=billing"
+      "http://localhost/acme/settings?tab=billing"
     );
   });
 
@@ -200,7 +200,7 @@ describe("billing routes", () => {
     });
     expect(allowed.createPortalSession).toHaveBeenCalledWith(
       { id: "ws_123", name: "Acme", slug: "acme" },
-      "http://localhost/settings?tab=billing"
+      "http://localhost/acme/settings?tab=billing"
     );
   });
 

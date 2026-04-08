@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Billing is not configured for ${parsed.data.plan}` }, { status: 503 });
   }
 
-  const returnUrl = `${req.nextUrl.origin}/settings?tab=billing`;
+  const returnUrl = `${req.nextUrl.origin}/${context.workspace.slug}/settings?tab=billing`;
   const url = await createCheckoutSession(context.workspace, parsed.data.plan, returnUrl);
 
   return NextResponse.json({ url });

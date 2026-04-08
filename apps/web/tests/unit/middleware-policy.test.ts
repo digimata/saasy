@@ -14,11 +14,16 @@ describe("decide", () => {
     },
     {
       name: "preserves query params in anonymous protected redirects",
-      input: { pathname: "/billing", search: "?tab=usage", hasSessionCookie: false },
+      input: { pathname: "/acme/billing", search: "?tab=usage", hasSessionCookie: false },
       expected: {
         kind: "redirect",
-        location: "/sign-in?redirectTo=%2Fbilling%3Ftab%3Dusage",
+        location: "/sign-in?redirectTo=%2Facme%2Fbilling%3Ftab%3Dusage",
       },
+    },
+    {
+      name: "redirects anonymous workspace-slugged paths to sign-in",
+      input: { pathname: "/acme/settings", hasSessionCookie: false },
+      expected: { kind: "redirect", location: "/sign-in?redirectTo=%2Facme%2Fsettings" },
     },
     {
       name: "redirects anonymous onboard requests to sign-in",
@@ -65,7 +70,7 @@ describe("decide", () => {
     },
     {
       name: "allows protected routes when a session cookie is present",
-      input: { pathname: "/members", hasSessionCookie: true },
+      input: { pathname: "/acme/members", hasSessionCookie: true },
       expected: { kind: "allow" },
     },
   ])("$name", ({ input, expected }) => {

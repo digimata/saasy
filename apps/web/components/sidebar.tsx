@@ -11,17 +11,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
+import { useWorkspaceSlug } from "@/lib/workspace-context";
 import { IconActivity, IconInbox, IconBox, IconSettingsSlider } from "@/components/ui/icons";
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip";
 
 const navItems = [
-  { label: "Overview", href: "/", icon: IconActivity },
+  { label: "Overview", href: "", icon: IconActivity },
   { label: "Projects", href: "/projects", icon: IconBox },
   { label: "Orders", href: "/orders", icon: IconInbox },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
+  const slug = useWorkspaceSlug();
+  const base = `/${slug}`;
 
   return (
     <TooltipProvider>
@@ -29,13 +32,16 @@ export function Sidebar() {
         {/* Top: main nav */}
         <nav className="flex flex-col items-center gap-1 mt-2">
           {navItems.map((item) => {
-            const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const href = `${base}${item.href}`;
+            const active = item.href === ""
+              ? pathname === base || pathname === `${base}/`
+              : pathname.startsWith(href);
             return (
               <Tooltip key={item.href}>
                 <TooltipTrigger
                   render={
                     <Link
-                      href={item.href}
+                      href={href}
                       prefetch={false}
                       className={cn(
                         "grid place-items-center size-9 rounded-md transition-colors duration-150",
@@ -61,11 +67,11 @@ export function Sidebar() {
           <TooltipTrigger
             render={
               <Link
-                href="/settings"
+                href={`${base}/settings`}
                 prefetch={false}
                 className={cn(
                   "grid place-items-center size-9 rounded-md transition-colors duration-150",
-                  pathname.startsWith("/settings")
+                  pathname.startsWith(`${base}/settings`)
                     ? "text-foreground bg-ds-bg-200"
                     : "text-ds-gray-600 hover:text-foreground"
                 )}

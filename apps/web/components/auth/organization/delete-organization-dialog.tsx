@@ -105,7 +105,7 @@ export function DeleteOrganizationDialog({
         message: localization.DELETE_ORGANIZATION_SUCCESS!,
       });
 
-      navigate(`${accountOptions?.basePath}/${accountOptions?.viewPaths.ORGANIZATIONS}`);
+      navigate("/");
 
       closeDialog(onOpenChange);
     } catch (error) {
