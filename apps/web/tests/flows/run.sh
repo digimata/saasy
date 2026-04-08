@@ -8,13 +8,13 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 FLOW_DIR="$(pwd)"
-APP_DIR="$(cd ../../.. && pwd)"
+APP_DIR="$(cd ../../../.. && pwd)"
 MAX_CONCURRENT=4
 
 # Load env from .env.local (same vars the app uses)
 if [[ -f "${APP_DIR}/.env.local" ]]; then
   set -a
-  source <(grep -v '^\s*#' "${APP_DIR}/.env.local" | grep -v '^\s*$')
+  eval "$(grep -v '^\s*#' "${APP_DIR}/.env.local" | grep -v '^\s*$')"
   set +a
 fi
 
@@ -111,16 +111,7 @@ Additional tools:
 - stripe — Stripe CLI for verifying live Stripe state (e.g. stripe subscriptions retrieve <id>)
 
 ## Flow-Specific Instructions
-$(python3 -c "
-import yaml, sys
-with open('${FLOW_DIR}/${flow_file}') as f:
-    data = yaml.safe_load(f)
-instructions = data.get('instructions', '')
-if instructions:
-    print(instructions)
-else:
-    print('(none)')
-")
+$(sed -n '/^instructions: |/,/^[^ ]/{ /^instructions: |/d; /^[^ ]/d; s/^  //; p; }' "${FLOW_DIR}/${flow_file}")
 
 ## Auth
 To sign in, use OTP flow with email. After requesting OTP, get the code from the DB:
@@ -171,12 +162,29 @@ for file in "${FILES[@]}"; do
   log_file="${LOG_DIR}/${filename}.log"
   >&2 echo "[run] $file → log: $log_file"
 
-  prompt=$(prompt_for_file "$file")
-  echo "$prompt" | claude --print \
-    --output-format json \
-    --json-schema "$RESULT_SCHEMA" \
-    --allowedTools "Bash(agent-browser:*) Bash(psql:*) Bash(stripe:*) Bash(openssl:*) Bash(python3:*) Read" \
-    > "$result_file" 2>"$log_file" &
+  prompt_file="${RESULTS_DIR}/${filename}.prompt"
+  prompt_for_file "$file" > "$prompt_file"
+
+  if [[ ! -s "$prompt_file" ]]; then
+    >&2 echo "[ERROR] $file — prompt generation failed"
+    echo "{\"file\": \"${file}\", \"results\": [{\"path\": \"_error\", \"pass\": false, \"reason\": \"Prompt generation failed\"}]}" > "$result_file"
+    continue
+  fi
+
+  >&2 echo "  prompt: $(wc -c < "$prompt_file") bytes"
+
+  (
+    claude --print \
+      --output-format json \
+      --json-schema "$RESULT_SCHEMA" \
+      --allowedTools "Bash(agent-browser:*) Bash(psql:*) Bash(stripe:*) Bash(openssl:*) Bash(python3:*) Read" \
+      < "$prompt_file" \
+      > "$result_file" 2>"$log_file"
+    exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+      >&2 echo "[ERROR] $file — claude exited with code $exit_code"
+    fi
+  ) &
   PIDS+=($!)
   RUNNING=$((RUNNING + 1))
 done

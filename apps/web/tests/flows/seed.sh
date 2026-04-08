@@ -16,16 +16,19 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-APP_DIR="$(cd ../../.. && pwd)"
+APP_DIR="$(cd ../../../.. && pwd)"
 
-# Load env
-if [[ -f "${APP_DIR}/.env.local" ]]; then
-  set -a
-  source <(grep -v '^\s*#' "${APP_DIR}/.env.local" | grep -v '^\s*$')
-  set +a
-fi
+# Load env (check both project root and web app)
+for envfile in "${APP_DIR}/.env.local" "${APP_DIR}/apps/web/.env.local"; do
+  if [[ -f "$envfile" ]]; then
+    set -a
+    eval "$(grep -v '^\s*#' "$envfile" | grep -v '^\s*$')"
+    set +a
+  fi
+done
 
-DATABASE_URL="${DATABASE_URL:-postgresql://postgres:postgres@localhost:54329/saasy}"
+# Use base DB URL without search_path restrictions (seed needs access to all schemas)
+DATABASE_URL="postgresql://postgres:postgres@localhost:54329/saasy"
 FIXTURES_FILE="$(pwd)/fixtures.json"
 
 # ─── Config ────────────────────────────────────────────────
@@ -106,10 +109,9 @@ STRIPE_CUSTOMER_ID=$(sql_single "
 if [[ -z "$STRIPE_CUSTOMER_ID" ]]; then
   STRIPE_CUSTOMER_ID=$(stripe customers create \
     --name "$SEED_WORKSPACE_NAME" \
-    --metadata[workspaceId]="$WORKSPACE_ID" \
-    --metadata[slug]="$SEED_WORKSPACE_SLUG" \
-    -d "idempotency_key=seed:${WORKSPACE_ID}" \
-    2>/dev/null | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
+    -d "metadata[workspaceId]=$WORKSPACE_ID" \
+    -d "metadata[slug]=$SEED_WORKSPACE_SLUG" \
+    2>&1 | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
 
   sql "
     INSERT INTO billing.customers (workspace_id, provider, provider_customer_id)
@@ -121,6 +123,36 @@ else
   >&2 echo "  exists: $STRIPE_CUSTOMER_ID"
 fi
 
+# ─── Attach test payment method ──────────────────────────
+
+>&2 echo "[seed] ensuring test payment method..."
+HAS_PM=$(stripe payment_methods list \
+  --customer "$STRIPE_CUSTOMER_ID" \
+  --type card \
+  --limit 1 \
+  2>&1 | python3 -c "
+import json, sys
+data = json.load(sys.stdin)['data']
+print(data[0]['id'] if data else '')
+" 2>/dev/null || true)
+
+if [[ -z "$HAS_PM" ]]; then
+  PM_ID=$(stripe payment_methods create \
+    --type card \
+    -d "card[token]=tok_visa" \
+    2>&1 | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
+
+  stripe payment_methods attach "$PM_ID" \
+    --customer "$STRIPE_CUSTOMER_ID" >/dev/null 2>&1
+
+  stripe customers update "$STRIPE_CUSTOMER_ID" \
+    -d "invoice_settings[default_payment_method]=$PM_ID" >/dev/null 2>&1
+
+  >&2 echo "  attached: $PM_ID"
+else
+  >&2 echo "  exists: $HAS_PM"
+fi
+
 # ─── Stripe subscription (Pro) ───────────────────────────
 
 >&2 echo "[seed] ensuring Pro subscription..."
@@ -130,7 +162,7 @@ EXISTING_SUB_ID=$(stripe subscriptions list \
   --customer "$STRIPE_CUSTOMER_ID" \
   --status active \
   --limit 1 \
-  2>/dev/null | python3 -c "
+  2>&1 | python3 -c "
 import json, sys
 data = json.load(sys.stdin)['data']
 print(data[0]['id'] if data else '')
@@ -141,20 +173,20 @@ if [[ -z "$EXISTING_SUB_ID" ]]; then
   stripe subscriptions list \
     --customer "$STRIPE_CUSTOMER_ID" \
     --limit 10 \
-    2>/dev/null | python3 -c "
+    2>&1 | python3 -c "
 import json, sys
 for s in json.load(sys.stdin)['data']:
     if s['status'] not in ('canceled',):
         print(s['id'])
 " 2>/dev/null | while read -r sid; do
-    stripe subscriptions cancel "$sid" 2>/dev/null >/dev/null || true
+    stripe subscriptions cancel "$sid" >/dev/null 2>&1 || true
   done
 
   # Create a new Pro subscription
   SUB_JSON=$(stripe subscriptions create \
     --customer "$STRIPE_CUSTOMER_ID" \
     -d "items[0][price]=${STRIPE_PRICE_PRO}" \
-    2>/dev/null)
+    2>&1)
 
   SUB_ID=$(echo "$SUB_JSON" | python3 -c "import json,sys; print(json.load(sys.stdin)['id'])")
   >&2 echo "  created: $SUB_ID"
@@ -164,7 +196,7 @@ else
 fi
 
 # Sync subscription to local DB
-SUB_DATA=$(stripe subscriptions retrieve "$SUB_ID" 2>/dev/null)
+SUB_DATA=$(stripe subscriptions retrieve "$SUB_ID" 2>&1)
 python3 -c "
 import json, sys, subprocess
 
