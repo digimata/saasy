@@ -41,8 +41,8 @@ export function PlanCard({
               <p className="text-copy-13 text-muted-foreground">You are on the free plan.</p>
             )}
           </div>
-          <Button variant="secondary" onClick={onAdjust}>
-            Adjust plan
+          <Button variant={isPaid ? "secondary" : "default"} onClick={onAdjust}>
+            {isPaid ? "Adjust plan" : "Upgrade"}
           </Button>
         </div>
       </div>
