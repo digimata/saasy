@@ -6,43 +6,41 @@ import { usage } from "@repo/db/schema";
 import { CURRENT_PLAN_VERSION, type Plan, type PlanId, type PlanVersion } from "./plans";
 import { getWorkspaceBillingState } from "./stripe";
 
-// ─── Types ───────────────────────────────────────────────
-
 // --------------------------------------------------------
 // projects/saasy/packages/billing/src/entitlements.ts
 //
-// export type EntitlementId                            L48
-// export type Entitlement                              L50
-// kind                                                 L51
-// value                                                L51
-// kind                                                 L52
-// value                                                L52
-// type EntitlementMatrix                               L54
-// const ENTITLEMENTS                                   L58
-// export class EntitlementError                        L83
-//   constructor()                                      L84
-// export interface Entitlements                       L100
-//   readonly plan                                     L101
-//   has()                                             L108
-//   value()                                           L111
-//   check()                                           L117
-//   usage()                                           L120
-//   consume()                                         L123
-//   release()                                         L126
-// export type ClientEntitlements                      L130
-// class PureEntitlements                              L134
-//   constructor()                                     L135
-//   has()                                             L137
-//   value()                                           L145
-//   check()                                           L149
-// class ServerEntitlements                            L165
-//   constructor()                                     L166
-//   async usage()                                     L173
-//   async consume()                                   L182
-//   async release()                                   L212
-// export function entitlementsFor()                   L223
-// export async function getWorkspaceEntitlements()    L228
-// function resolve()                                  L235
+// export type EntitlementId                            L46
+// export type Entitlement                              L48
+// kind                                                 L49
+// value                                                L49
+// kind                                                 L50
+// value                                                L50
+// type EntitlementMatrix                               L52
+// const ENTITLEMENTS                                   L56
+// export class EntitlementError                        L81
+//   constructor()                                      L82
+// export interface Entitlements                        L98
+//   readonly plan                                      L99
+//   has()                                             L106
+//   value()                                           L109
+//   check()                                           L115
+//   usage()                                           L118
+//   consume()                                         L121
+//   release()                                         L124
+// export type ClientEntitlements                      L128
+// class PureEntitlements                              L132
+//   constructor()                                     L133
+//   has()                                             L135
+//   value()                                           L143
+//   check()                                           L147
+// class ServerEntitlements                            L163
+//   constructor()                                     L164
+//   async usage()                                     L171
+//   async consume()                                   L180
+//   async release()                                   L210
+// export function entitlementsFor()                   L221
+// export async function getWorkspaceEntitlements()    L226
+// function resolve()                                  L233
 // --------------------------------------------------------
 
 export type EntitlementId = "max_projects" | "max_members" | "api_access" | "custom_domains";
