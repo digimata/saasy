@@ -35,7 +35,7 @@
 "use client";
 
 import type { Organization } from "better-auth/plugins/organization";
-import { ChevronsUpDown, LogInIcon, PlusCircleIcon, SettingsIcon } from "lucide-react";
+import { ChevronsUpDown, PlusCircleIcon } from "lucide-react";
 import {
   type ComponentProps,
   type ReactNode,
@@ -45,8 +45,11 @@ import {
   useMemo,
   useState,
 } from "react";
+import useSWR from "swr";
 
 import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
+import { Badge } from "@/components/ui/badge";
+import { PLAN_BADGE } from "@/components/billing/plan-card";
 import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 import { cn, getLocalizedError } from "@/lib/auth/utils";
 import type { AuthLocalization } from "@/lib/auth/localization/auth-localization";
@@ -60,7 +63,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UserAvatar, type UserAvatarClassNames } from "@/components/auth/user-avatar";
 import type { UserViewClassNames } from "@/components/auth/user-view";
-import { CreateOrganizationDialog } from "./create-organization-dialog";
 import { OrganizationCellView, type OrganizationViewClassNames } from "./organization-cell-view";
 import { OrganizationLogo } from "./organization-logo";
 import { PersonalAccountView } from "./personal-account-view";
@@ -156,8 +158,11 @@ export function OrganizationSwitcher({
   );
 
   const [activeOrganizationPending, setActiveOrganizationPending] = useState(false);
-  const [isCreateOrgDialogOpen, setIsCreateOrgDialogOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { data: workspacePlans } = useSWR<Record<string, string>>(
+    dropdownOpen ? "/api/billing/plans" : null,
+    (url: string) => fetch(url).then((r) => r.json()),
+  );
 
   const { data: sessionData, isPending: sessionPending } = useSession();
   const user = sessionData?.user;
@@ -328,156 +333,56 @@ export function OrganizationSwitcher({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent
-          className={cn(
-            "w-[--radix-dropdown-menu-trigger-width] min-w-56 max-w-64",
-            classNames?.content?.base
-          )}
+          className="min-w-56 max-w-64 p-1"
           align={align}
           alignOffset={alignOffset}
           side={side}
           sideOffset={sideOffset}
           onCloseAutoFocus={(e) => e.preventDefault()}
         >
-          <div
-            className={cn(
-              "flex items-center justify-between gap-2 p-2",
-              classNames?.content?.menuItem
-            )}
-          >
-            {user || isPending ? (
-              <>
-                {activeOrganizationPending || activeOrganization || hidePersonal ? (
-                  <OrganizationCellView
-                    classNames={classNames?.content?.organization}
-                    isPending={isPending || activeOrganizationPending}
-                    organization={activeOrganization}
-                    localization={localization}
-                  />
-                ) : (
-                  <PersonalAccountView
-                    classNames={classNames?.content?.user}
-                    isPending={isPending}
-                    localization={localization}
-                    user={user}
-                  />
-                )}
+          {organizations?.map((organization) => (
+            <DropdownMenuItem
+              key={organization.id}
+              className="gap-3 px-3 py-2.5"
+              onClick={() => {
+                if (organization.id !== activeOrganization?.id) {
+                  switchOrganization(organization);
+                }
+                setDropdownOpen(false);
+              }}
+            >
+              <div className="size-6 rounded-[6px] bg-ds-green-500/12 flex items-center justify-center text-ds-green-500 text-[11px] font-medium shrink-0">
+                {organization.name?.[0]?.toUpperCase() || "?"}
+              </div>
+              <span className="text-label-13 font-medium text-foreground truncate">{organization.name}</span>
+              {workspacePlans && (
+                <Badge variant={PLAN_BADGE[workspacePlans[organization.id] ?? "hobby"]?.variant ?? "muted"} className="text-[11px] font-normal ml-auto shrink-0">
+                  {PLAN_BADGE[workspacePlans[organization.id] ?? "hobby"]?.label ?? "Hobby"}
+                </Badge>
+              )}
+            </DropdownMenuItem>
+          ))}
 
-                {!isPending && (
-                  <Link
-                    href={
-                      activeOrganization
-                        ? pathMode === "slug"
-                          ? `${organizationOptions?.basePath}/${activeOrganization.slug}/${organizationOptions?.viewPaths.SETTINGS}`
-                          : `${organizationOptions?.basePath}/${organizationOptions?.viewPaths.SETTINGS}`
-                        : `${accountOptions?.basePath}/${accountOptions?.viewPaths.SETTINGS}`
-                    }
-                  >
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className="!size-8 ml-auto"
-                      onClick={() => setDropdownOpen(false)}
-                    >
-                      <SettingsIcon className="size-4" />
-                    </Button>
-                  </Link>
-                )}
-              </>
-            ) : (
-              <div className="-my-1 text-muted-foreground text-xs">{localization.ORGANIZATION}</div>
-            )}
-          </div>
-
-          <DropdownMenuSeparator className={classNames?.content?.separator} />
-
-          {activeOrganization &&
-            !hidePersonal &&
-            (pathMode === "slug" ? (
-              <Link href={personalPath ?? redirectTo}>
-                <DropdownMenuItem>
-                  <PersonalAccountView
-                    classNames={classNames?.content?.user}
-                    isPending={isPending}
-                    localization={localization}
-                    user={user}
-                  />
-                </DropdownMenuItem>
-              </Link>
-            ) : (
-              <DropdownMenuItem onClick={() => switchOrganization(null)}>
-                <PersonalAccountView
-                  classNames={classNames?.content?.user}
-                  isPending={isPending}
-                  localization={localization}
-                  user={user}
-                />
-              </DropdownMenuItem>
-            ))}
-
-          {organizations?.map(
-            (organization) =>
-              organization.id !== activeOrganization?.id &&
-              (pathMode === "slug" ? (
-                <Link
-                  key={organization.id}
-                  href={`${organizationOptions?.basePath}/${organization.slug}`}
-                >
-                  <DropdownMenuItem>
-                    <OrganizationCellView
-                      classNames={classNames?.content?.organization}
-                      isPending={isPending}
-                      localization={localization}
-                      organization={organization}
-                    />
-                  </DropdownMenuItem>
-                </Link>
-              ) : (
-                <DropdownMenuItem
-                  key={organization.id}
-                  onClick={() => switchOrganization(organization)}
-                >
-                  <OrganizationCellView
-                    classNames={classNames?.content?.organization}
-                    isPending={isPending}
-                    localization={localization}
-                    organization={organization}
-                  />
-                </DropdownMenuItem>
-              ))
-          )}
-
-          {organizations &&
-            organizations.length > 0 &&
-            (!hidePersonal || organizations.length > 1) && (
-              <DropdownMenuSeparator className={classNames?.content?.separator} />
-            )}
-
-          {!isPending && sessionData ? (
-            hideCreate ? null : (
+          {!isPending && sessionData && !hideCreate && (
+            <>
+              {organizations && organizations.length > 0 && (
+                <DropdownMenuSeparator />
+              )}
               <DropdownMenuItem
-                className={cn(classNames?.content?.menuItem)}
-                onClick={() => setIsCreateOrgDialogOpen(true)}
+                className="gap-3 px-3 py-2.5"
+                onClick={() => {
+                  setDropdownOpen(false);
+                  navigate("/onboard");
+                }}
               >
-                <PlusCircleIcon />
-                {localization.CREATE_ORGANIZATION}
+                <PlusCircleIcon className="size-4 text-muted-foreground shrink-0 ml-0.5" />
+                <span className="text-label-13 font-medium text-foreground">Create workspace</span>
               </DropdownMenuItem>
-            )
-          ) : (
-            <Link href={`${basePath}/${viewPaths.SIGN_IN}`}>
-              <DropdownMenuItem className={cn(classNames?.content?.menuItem)}>
-                <LogInIcon />
-                {localization.SIGN_IN}
-              </DropdownMenuItem>
-            </Link>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <CreateOrganizationDialog
-        open={isCreateOrgDialogOpen}
-        onOpenChange={setIsCreateOrgDialogOpen}
-        localization={localization}
-      />
     </>
   );
 }

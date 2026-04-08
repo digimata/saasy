@@ -15,6 +15,7 @@ export {
   createCheckoutSession,
   createPortalSession,
   getWorkspaceBillingState,
+  getWorkspacePlans,
   getWorkspaceInvoices,
   type BillingState,
   type Invoice,

@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, inArray } from "drizzle-orm";
 import { db } from "@repo/db";
 import { customers, subscriptions, type Subscription, type Workspace } from "@repo/db/schema";
 import { env } from "./env";
@@ -200,6 +200,37 @@ export async function getWorkspaceBillingState(workspaceId: string): Promise<Bil
     .orderBy(desc(subscriptions.createdAt));
 
   return toBillingState(!!customer, selectCurrentSubscription(orderedSubscriptions));
+}
+
+/**
+ * Get the active plan for multiple workspaces in a single query.
+ * Returns a map of workspaceId → plan name ("hobby" | "pro" | "ultra").
+ */
+export async function getWorkspacePlans(
+  workspaceIds: string[]
+): Promise<Record<string, string>> {
+  if (workspaceIds.length === 0) return {};
+
+  const ACTIVE_SUBS = ["active", "trialing", "past_due"];
+
+  const rows = await db
+    .select({
+      workspaceId: subscriptions.workspaceId,
+      plan: subscriptions.plan,
+      status: subscriptions.status,
+    })
+    .from(subscriptions)
+    .where(inArray(subscriptions.workspaceId, workspaceIds))
+    .orderBy(desc(subscriptions.createdAt));
+
+  const result: Record<string, string> = {};
+  for (const id of workspaceIds) {
+    const sub = rows.find(
+      (r) => r.workspaceId === id && ACTIVE_SUBS.includes(r.status)
+    );
+    result[id] = sub?.plan ?? "hobby";
+  }
+  return result;
 }
 
 // ─── Invoices ──────────────────────────────────────────────

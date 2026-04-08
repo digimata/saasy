@@ -102,6 +102,7 @@ export function PlanDialog({
   checkoutPlans,
   checkoutLoading,
   onCheckout,
+  onPortal,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -109,6 +110,7 @@ export function PlanDialog({
   checkoutPlans?: { pro: boolean; ultra: boolean };
   checkoutLoading: string | null;
   onCheckout: (plan: "pro" | "ultra") => void;
+  onPortal?: () => void;
 }) {
   const [interval, setInterval] = useState<Interval>("monthly");
 
@@ -165,6 +167,14 @@ export function PlanDialog({
                     onClick={() => onCheckout(p)}
                   >
                     {isAvailable ? "Choose plan" : "Unavailable"}
+                  </Button>
+                ) : currentPlan !== "hobby" ? (
+                  <Button
+                    className="mt-5 w-full"
+                    variant="outline"
+                    onClick={onPortal}
+                  >
+                    Downgrade
                   </Button>
                 ) : null}
               </div>

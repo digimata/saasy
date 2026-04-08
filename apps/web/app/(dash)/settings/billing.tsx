@@ -1,25 +1,29 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import useSWR from "swr";
 import useSWRInfinite from "swr/infinite";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PlanCard } from "@/components/billing/plan-card";
 import { PaymentCard } from "@/components/billing/payment-card";
 import { InvoicesCard } from "@/components/billing/invoices-card";
 import { PlanDialog } from "@/components/billing/plan-dialog";
-import type { BillingStateResponse, InvoicesResponse } from "@/app/api/billing/schema";
+import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
+import { useBillingState } from "@/hooks/_/use-billing-state";
+import type { InvoicesResponse } from "@/app/api/billing/schema";
 
 const fetcher = (url: string) => fetch(url).then((r) => (r.ok ? r.json() : null));
 
 export function BillingTab() {
-  const { data: state } = useSWR<BillingStateResponse>("/api/billing/state", fetcher);
+  const { data: org } = useCurrentOrganization();
+  const wsId = org?.id;
+  const { data: state } = useBillingState();
   const { data: invoicePages, size, setSize } = useSWRInfinite<InvoicesResponse>(
     (pageIndex, prev) => {
+      if (!wsId) return null;
       if (prev && !prev.hasMore) return null;
-      if (pageIndex === 0) return "/api/billing/invoices";
+      if (pageIndex === 0) return `/api/billing/invoices?ws=${wsId}`;
       const cursor = prev!.invoices[prev!.invoices.length - 1]!.id;
-      return `/api/billing/invoices?cursor=${cursor}`;
+      return `/api/billing/invoices?cursor=${cursor}&ws=${wsId}`;
     },
     fetcher,
   );
@@ -101,6 +105,7 @@ export function BillingTab() {
         checkoutPlans={state.checkoutPlans}
         checkoutLoading={checkoutLoading}
         onCheckout={handleCheckout}
+        onPortal={handlePortal}
       />
     </div>
   );

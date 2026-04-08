@@ -30,23 +30,6 @@ export default function SetupPage() {
         return;
       }
 
-      if (session.session.activeOrganizationId) {
-        window.location.replace("/");
-        return;
-      }
-
-      // Check for existing orgs
-      const { data: organizations } = await authClient.organization.list();
-      const firstOrg = organizations?.[0];
-      if (firstOrg) {
-        await authClient.organization.setActive({
-          organizationId: firstOrg.id,
-          fetchOptions: { throw: true },
-        });
-        window.location.replace("/");
-        return;
-      }
-
       setEmail(session.user.email);
       setReady(true);
     })();
@@ -166,7 +149,7 @@ export default function SetupPage() {
         >
           <div className="text-center">
             <div className="mb-6 flex justify-center">
-              <Logo />
+              <Logo className="size-8" />
             </div>
             <h1 className="text-heading-24 font-semibold">Create a workspace</h1>
           </div>

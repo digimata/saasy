@@ -18,6 +18,7 @@ export function PlanCard({
 }) {
   const planId = state.plan?.id ?? "hobby";
   const planName = PLAN_NAMES[planId] ?? planId;
+  const planVariant = planId === "pro" ? "pro" : planId === "ultra" ? "ultra" : "outline";
   const isPaid = planId !== "hobby";
 
   return (
@@ -28,7 +29,7 @@ export function PlanCard({
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="text-heading-16">{planName}</span>
-              {state.status && <Badge variant="muted">{capitalize(state.status)}</Badge>}
+              {state.status && <Badge variant={planVariant}>{capitalize(state.status)}</Badge>}
             </div>
             {isPaid && state.currentPeriodEnd ? (
               <p className="text-copy-13 text-muted-foreground">
@@ -49,4 +50,10 @@ export function PlanCard({
   );
 }
 
-export { PLAN_NAMES };
+const PLAN_BADGE: Record<string, { label: string; variant: "pro" | "ultra" | "muted" }> = {
+  hobby: { label: "Hobby", variant: "muted" },
+  pro: { label: "Pro", variant: "pro" },
+  ultra: { label: "Ultra", variant: "ultra" },
+};
+
+export { PLAN_NAMES, PLAN_BADGE };

@@ -14,7 +14,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | Saasy",
+    template: "%s · Saasy",
     default: "Saasy",
   },
   description: "SaaS template",

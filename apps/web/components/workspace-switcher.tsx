@@ -4,13 +4,18 @@ import { IconChevronUpDown } from "@/components/ui/icons";
 import { useContext } from "react";
 
 import { useCurrentOrganization } from "@/hooks/auth/use-current-organization";
+import { useBillingState } from "@/hooks/_/use-billing-state";
 import { AuthUIContext } from "@/lib/auth/auth-ui-provider";
 import { OrganizationSwitcher } from "@/components/auth/organization/organization-switcher";
 import { Badge } from "@/components/ui/badge";
+import { PLAN_BADGE } from "@/components/billing/plan-card";
 import { Logo } from "@/components/logo";
 
 export function WorkspaceSwitcher() {
   const { data: organization, isPending } = useCurrentOrganization();
+  const { data: billing } = useBillingState();
+  const planId = billing?.plan?.id ?? "hobby";
+  const badge = PLAN_BADGE[planId] ?? PLAN_BADGE.hobby;
 
   return (
     <div className="flex items-center gap-2">
@@ -26,12 +31,13 @@ export function WorkspaceSwitcher() {
           <span className="text-label-13 font-medium text-foreground">
             {organization.name}
           </span>
-          <Badge variant="muted" className="text-label-12 font-normal text-muted-foreground">
-            Free
+          <Badge variant={badge.variant} className="text-label-12 font-normal">
+            {badge.label}
           </Badge>
           <OrganizationSwitcher
             hidePersonal
             align="start"
+            alignOffset={-8}
             side="bottom"
             sideOffset={8}
             trigger={
