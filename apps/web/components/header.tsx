@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTheme } from "@/components/providers/theme-provider";
 import { Bell, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { IconSearch } from "@/components/ui/icons";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { signOut, useSession } from "@repo/auth/client";
 
 import {
@@ -63,9 +64,12 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" className="cursor-pointer">
-                <div className="bg-ds-green-500/12 text-ds-green-500 flex items-center justify-center rounded-full size-7 text-xs font-medium">
-                  {session?.user?.name?.[0]?.toUpperCase() || "?"}
-                </div>
+                <Avatar className="size-7">
+                  <AvatarImage src={session?.user?.image || undefined} />
+                  <AvatarFallback className="bg-ds-green-500/12 text-ds-green-500 text-xs font-medium">
+                    {session?.user?.name?.[0]?.toUpperCase() || "?"}
+                  </AvatarFallback>
+                </Avatar>
                 <span className="sr-only">
                   {session?.user?.name || session?.user?.email}
                 </span>
