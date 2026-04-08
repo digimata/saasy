@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTheme } from "@/components/providers/theme-provider";
-import { Bell, LogOut, Monitor, Moon, Sun, User } from "lucide-react";
+import { Bell, LogOut, Monitor, Moon, Sun } from "lucide-react";
 import { IconSearch } from "@/components/ui/icons";
 import { signOut, useSession } from "@repo/auth/client";
 
@@ -63,17 +63,9 @@ export function Header() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button type="button" className="cursor-pointer">
-                {session?.user?.image ? (
-                  <img
-                    src={session.user.image}
-                    alt=""
-                    className="size-7 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="bg-ds-green-500/12 text-ds-green-500 flex items-center justify-center rounded-full size-7 text-xs font-medium">
-                    {session?.user?.name?.[0]?.toUpperCase() || <User className="size-3.5" />}
-                  </div>
-                )}
+                <div className="bg-ds-green-500/12 text-ds-green-500 flex items-center justify-center rounded-full size-7 text-xs font-medium">
+                  {session?.user?.name?.[0]?.toUpperCase() || "?"}
+                </div>
                 <span className="sr-only">
                   {session?.user?.name || session?.user?.email}
                 </span>

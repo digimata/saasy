@@ -154,7 +154,7 @@ export const memberships = authSchema.table(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => ({
-    validRole: check("auth_memberships_role_check", sql`${table.role} in ('admin', 'member')`),
+    validRole: check("auth_memberships_role_check", sql`${table.role} in ('owner', 'admin', 'member')`),
     userWorkspaceUnique: uniqueIndex("auth_memberships_user_workspace_unique").on(
       table.userId,
       table.workspaceId
