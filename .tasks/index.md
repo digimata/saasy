@@ -19,3 +19,4 @@ No active task.
 | [T-0005](T-0005.md) | Billing stub -- Stripe customer + portal | planned | Blocked on T-0004                          |
 | [T-0006](T-0006.md) | Wallet login + 2FA plugins               | planned | Revisit after workspace settings stabilize |
 | [T-0013](T-0013.md) | Design system — colors, typography, icons | planned | Geist-inspired scales + semantic tokens    |
+| [T-0014](T-0014.md) | Feature entitlement matrix                | planned | Plan-gated features + limits               |
