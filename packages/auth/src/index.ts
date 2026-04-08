@@ -82,7 +82,7 @@ export const auth = betterAuth({
       },
     }),
     organization({
-      creatorRole: "admin",
+      creatorRole: "owner",
       sendInvitationEmail: async ({ id, email, organization, inviter, role }) => {
         const appUrl = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
         const acceptUrl = `${appUrl}/accept-invitation?invitationId=${id}`;

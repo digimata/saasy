@@ -192,7 +192,7 @@ export default function SetupPage() {
                 disabled={
                   loading || !workspaceName.trim() || !workspaceSlug.trim()
                 }
-                className="w-64 h-11 px-4 bg-primary hover:bg-primary/90 text-background font-medium rounded-lg text-base disabled:opacity-50"
+                className="w-64 h-12 px-4 bg-primary hover:bg-primary/90 text-background font-medium rounded-md text-base disabled:opacity-50"
               >
                 {loading ? (
                   <div className="flex items-center gap-2">
