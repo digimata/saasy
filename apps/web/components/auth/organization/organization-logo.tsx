@@ -102,6 +102,20 @@ export function OrganizationLogo({
           ? "size-12"
           : "size-8";
 
+  const radiusClass =
+    size === "lg"
+      ? "rounded-[12px]"
+      : (size as string) === "xl"
+        ? "rounded-[14px]"
+        : "rounded-[8px]";
+
+  const afterRadiusClass =
+    size === "lg"
+      ? "after:rounded-[12px]"
+      : (size as string) === "xl"
+        ? "after:rounded-[14px]"
+        : "after:rounded-[8px]";
+
   const textClass =
     size === "sm"
       ? "text-[10px]"
@@ -115,7 +129,9 @@ export function OrganizationLogo({
     return (
       <Avatar
         className={cn(
-          "bg-ds-green-500/12 rounded-[14px]",
+          "bg-ds-green-500/12",
+          radiusClass,
+          afterRadiusClass,
           sizeClass,
           className,
           classNames?.base
@@ -125,18 +141,18 @@ export function OrganizationLogo({
         {avatar?.Image ? (
           <avatar.Image
             alt={name || localization?.ORGANIZATION}
-            className={classNames?.image}
+            className={cn(radiusClass, classNames?.image)}
             src={src}
           />
         ) : (
           <AvatarImage
             alt={name || localization?.ORGANIZATION}
-            className={classNames?.image}
+            className={cn(radiusClass, classNames?.image)}
             src={src}
           />
         )}
 
-        <AvatarFallback className={cn("text-ds-green-500 font-medium rounded-[14px]", textClass, classNames?.fallback)}>
+        <AvatarFallback className={cn("text-ds-green-500 font-medium", radiusClass, textClass, classNames?.fallback)}>
           {name?.[0]?.toUpperCase() || "?"}
         </AvatarFallback>
       </Avatar>
@@ -144,19 +160,17 @@ export function OrganizationLogo({
   }
 
   return (
-    <Avatar
+    <div
       className={cn(
-        "bg-ds-green-500/12 rounded-[14px] flex items-center justify-center text-ds-green-500 font-medium shrink-0",
+        "bg-ds-green-500/12 flex items-center justify-center text-ds-green-500 font-medium shrink-0",
+        radiusClass,
         textClass,
         sizeClass,
         className,
         classNames?.base
       )}
-      {...props}
     >
-      <AvatarFallback className={cn("text-ds-green-500 font-medium rounded-[14px]", textClass, classNames?.fallback)}>
-        {name?.[0]?.toUpperCase() || "?"}
-      </AvatarFallback>
-    </Avatar>
+      {name?.[0]?.toUpperCase() || "?"}
+    </div>
   );
 }
