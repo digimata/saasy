@@ -25,7 +25,7 @@ import { decide } from "@/lib/auth/middleware";
 // export const config             L45
 // -----------------------------------
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const sessionCookie = getSessionCookie(request.headers);
 
