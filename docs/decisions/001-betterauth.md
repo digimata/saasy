@@ -46,7 +46,7 @@ Last updated: `2026.04.04`
 
 - Auth routes live at `/api/auth/[...all]` — a single catch-all handler.
 - BetterAuth's internal model names must be remapped to our table names in the adapter config.
-- Custom PG schema (`auth.*`) requires `search_path` on the connection string since BetterAuth's CLI doesn't natively support `pgSchema()`.
+- Custom PG schema (`auth.*`) is handled by Drizzle's `pgSchema()` — no `search_path` needed. BetterAuth's Drizzle adapter always uses schema-qualified queries.
 - If BetterAuth's organization plugin doesn't map cleanly to our workspace model, we bypass the plugin and manage workspaces directly via Drizzle.
 - OAuth secrets are env vars — no hosted dashboard to manage them.
 

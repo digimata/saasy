@@ -53,7 +53,7 @@ BetterAuth runs embedded in the Next.js app via a catch-all API route (`/api/aut
 
 **Adapter:** Drizzle. BetterAuth's internal model names are remapped to our canonical tables via the adapter's `schema` option.
 
-**Custom PG schema:** All auth tables live in `auth.*` (not `public.*`). Achieved via `search_path` on the connection string. The Drizzle schema uses `pgSchema("auth")` so migrations target the correct schema.
+**Custom PG schema:** All auth tables live in `auth.*` (not `public.*`). The Drizzle schema uses `pgSchema("auth")` so all queries are fully schema-qualified — no `search_path` needed.
 
 ### Identity Model
 
@@ -145,7 +145,7 @@ Architectural decisions are recorded in [`docs/decisions/`](decisions/).
 | ------- | -------------------------------------------------------------- | ---------- |
 | ADR-001 | [BetterAuth over Clerk/WorkOS](decisions/001-betterauth.md)    | 2026-04-04 |
 | ADR-002 | [Drizzle over Prisma](decisions/002-drizzle.md)                | 2026-04-04 |
-| ADR-003 | [Custom PG schema via search_path](decisions/003-pg-schema.md) | 2026-04-04 |
+| ADR-003 | [Custom PG schemas via Drizzle pgSchema](decisions/003-pg-schema.md) | 2026-04-04 |
 | ADR-004 | [Feature entitlements](decisions/004-entitlements.md)          | 2026-04-07 |
 | ADR-005 | [Workspace-scoped Stripe billing control plane](decisions/005-billing-control-plane.md) | 2026-04-07 |
 | ADR-006 | [Negative-evidence middleware and validated-session authorization](decisions/006-middleware-authorization.md) | 2026-04-07 |
