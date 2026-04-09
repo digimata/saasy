@@ -6,6 +6,13 @@ import { getStripe } from "./stripe";
 import { resolvePrice } from "./plans";
 import { env } from "./env";
 
+// -----------------------------------------------------
+// projects/saasy/packages/billing/src/webhooks.ts
+//
+// export function constructWebhookEvent()           L16
+// export async function syncStripeSubscription()    L24
+// -----------------------------------------------------
+
 export function constructWebhookEvent(body: string, signature: string): Stripe.Event {
   const s = getStripe();
   if (!env.STRIPE_WEBHOOK_SECRET) {
@@ -14,7 +21,7 @@ export function constructWebhookEvent(body: string, signature: string): Stripe.E
   return s.webhooks.constructEvent(body, signature, env.STRIPE_WEBHOOK_SECRET);
 }
 
-export async function syncSubscriptionFromStripe(subscription: Stripe.Subscription) {
+export async function syncStripeSubscription(subscription: Stripe.Subscription) {
   const stripeCustomerId =
     typeof subscription.customer === "string" ? subscription.customer : subscription.customer.id;
 

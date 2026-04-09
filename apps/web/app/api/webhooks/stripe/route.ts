@@ -4,16 +4,18 @@ import type Stripe from "stripe";
 import {
   isWebhookConfigured,
   constructWebhookEvent,
-  syncSubscriptionFromStripe,
+  syncStripeSubscription,
   CUSTOMER_SUBSCRIPTION_CREATED,
   CUSTOMER_SUBSCRIPTION_UPDATED,
   CUSTOMER_SUBSCRIPTION_DELETED,
+  CUSTOMER_SUBSCRIPTION_PAUSED,
+  CUSTOMER_SUBSCRIPTION_RESUMED,
 } from "@repo/billing";
 
 // -----------------------------------
-// projects/saasy/apps/web/app/api/billing/webhook/route.ts
+// projects/saasy/apps/web/app/api/webhooks/stripe/route.ts
 //
-// export async function POST()    L18
+// export async function POST()    L21
 // -----------------------------------
 
 export async function POST(req: NextRequest) {
@@ -38,7 +40,15 @@ export async function POST(req: NextRequest) {
     case CUSTOMER_SUBSCRIPTION_CREATED:
     case CUSTOMER_SUBSCRIPTION_UPDATED:
     case CUSTOMER_SUBSCRIPTION_DELETED:
-      await syncSubscriptionFromStripe(event.data.object as Stripe.Subscription);
+    case CUSTOMER_SUBSCRIPTION_PAUSED:
+    case CUSTOMER_SUBSCRIPTION_RESUMED:
+      await syncStripeSubscription(event.data.object as Stripe.Subscription);
+      break;
+    // TODO(billing): handle invoice-level payment signals for comms/recovery
+    // without making invoice events the source of subscription truth.
+    case "invoice.payment_failed":
+    case "invoice.payment_action_required":
+    case "invoice.paid":
       break;
   }
 

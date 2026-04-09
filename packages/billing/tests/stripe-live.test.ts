@@ -7,6 +7,21 @@ import { eq } from "drizzle-orm";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
 import { afterEach, describe, expect, it } from "vitest";
 
+// ----------------------------------------------
+// projects/saasy/packages/billing/tests/stripe-live.test.ts
+//
+// const repoRoot                             L25
+// const envPaths                             L26
+// const runStripeSmoke                       L54
+// const describeStripeSmoke                  L61
+// let migrated                               L63
+// let workspaceId                            L64
+// let stripeCustomerId                       L65
+// let stripeSubscriptionId                   L66
+// async function ensureMigrated()            L68
+// async function cleanupStripeArtifacts()    L80
+// ----------------------------------------------
+
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const envPaths = [
   path.join(repoRoot, ".env.local"),
@@ -19,7 +34,7 @@ for (const envPath of envPaths) {
   }
 }
 
-const [{ db }, { customers, subscriptions, workspaces }, { PLANS }, stripeModule, { syncSubscriptionFromStripe }] =
+const [{ db }, { customers, subscriptions, workspaces }, { PLANS }, stripeModule, { syncStripeSubscription }] =
   await Promise.all([
     import("@repo/db"),
     import("@repo/db/schema"),
@@ -157,7 +172,7 @@ describeStripeSmoke("live Stripe smoke", () => {
     });
     stripeSubscriptionId = remoteSubscription.id;
 
-    await syncSubscriptionFromStripe(remoteSubscription as Stripe.Subscription);
+    await syncStripeSubscription(remoteSubscription as Stripe.Subscription);
 
     let billingState = await getWorkspaceBillingState(workspace.id);
     expect(billingState.plan).toBe("pro");
@@ -181,7 +196,7 @@ describeStripeSmoke("live Stripe smoke", () => {
       proration_behavior: "none",
     });
 
-    await syncSubscriptionFromStripe(remoteSubscription as Stripe.Subscription);
+    await syncStripeSubscription(remoteSubscription as Stripe.Subscription);
 
     billingState = await getWorkspaceBillingState(workspace.id);
     expect(billingState.plan).toBe("ultra");
@@ -200,7 +215,7 @@ describeStripeSmoke("live Stripe smoke", () => {
       proration_behavior: "none",
     });
 
-    await syncSubscriptionFromStripe(remoteSubscription as Stripe.Subscription);
+    await syncStripeSubscription(remoteSubscription as Stripe.Subscription);
 
     billingState = await getWorkspaceBillingState(workspace.id);
     expect(billingState.plan).toBe("pro");
@@ -215,7 +230,7 @@ describeStripeSmoke("live Stripe smoke", () => {
       cancel_at_period_end: true,
     });
 
-    await syncSubscriptionFromStripe(remoteSubscription as Stripe.Subscription);
+    await syncStripeSubscription(remoteSubscription as Stripe.Subscription);
 
     billingState = await getWorkspaceBillingState(workspace.id);
     expect(billingState.plan).toBe("pro");
@@ -235,7 +250,7 @@ describeStripeSmoke("live Stripe smoke", () => {
     remoteSubscription = await stripe.subscriptions.cancel(remoteSubscription.id);
     stripeSubscriptionId = null;
 
-    await syncSubscriptionFromStripe(remoteSubscription as Stripe.Subscription);
+    await syncStripeSubscription(remoteSubscription as Stripe.Subscription);
 
     billingState = await getWorkspaceBillingState(workspace.id);
     expect(billingState.plan).toBe("hobby");

@@ -1,3 +1,6 @@
+// projects/saasy/packages/billing/src/index.ts
+//
+
 export {
   isBillingConfigured,
   canCreateCheckout,
@@ -20,11 +23,13 @@ export {
   type BillingState,
   type Invoice,
 } from "./stripe";
-export { constructWebhookEvent, syncSubscriptionFromStripe } from "./webhooks";
+export { constructWebhookEvent, syncStripeSubscription } from "./webhooks";
 export {
   CUSTOMER_SUBSCRIPTION_CREATED,
   CUSTOMER_SUBSCRIPTION_UPDATED,
   CUSTOMER_SUBSCRIPTION_DELETED,
+  CUSTOMER_SUBSCRIPTION_PAUSED,
+  CUSTOMER_SUBSCRIPTION_RESUMED,
 } from "./constants";
 export {
   getWorkspaceEntitlements,

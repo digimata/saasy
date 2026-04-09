@@ -70,7 +70,7 @@ async function loadWebhookRoute(options?: {
 }) {
   vi.resetModules();
 
-  const syncSubscriptionFromStripe = vi.fn(async () => undefined);
+  const syncStripeSubscription = vi.fn(async () => undefined);
   const constructWebhookEvent = vi.fn(() => {
     if (options?.validSignature === false) {
       throw new Error("invalid signature");
@@ -85,15 +85,17 @@ async function loadWebhookRoute(options?: {
   vi.doMock("@repo/billing", () => ({
     isWebhookConfigured: vi.fn(() => options?.isWebhookConfigured ?? true),
     constructWebhookEvent,
-    syncSubscriptionFromStripe,
+    syncStripeSubscription,
     CUSTOMER_SUBSCRIPTION_CREATED: "customer.subscription.created",
     CUSTOMER_SUBSCRIPTION_UPDATED: "customer.subscription.updated",
     CUSTOMER_SUBSCRIPTION_DELETED: "customer.subscription.deleted",
+    CUSTOMER_SUBSCRIPTION_PAUSED: "customer.subscription.paused",
+    CUSTOMER_SUBSCRIPTION_RESUMED: "customer.subscription.resumed",
   }));
 
   const route = await import("../../app/api/webhooks/stripe/route");
 
-  return { route, syncSubscriptionFromStripe };
+  return { route, syncStripeSubscription };
 }
 
 afterEach(() => {
@@ -139,7 +141,7 @@ describe("billing invariants", () => {
   });
 
   it("INV-BIL-006 accepts subscription truth only from a valid webhook", async function bil006() {
-    const { route, syncSubscriptionFromStripe } = await loadWebhookRoute({ validSignature: false });
+    const { route, syncStripeSubscription } = await loadWebhookRoute({ validSignature: false });
 
     const response = await route.POST(
       new NextRequest("http://localhost/api/webhooks/stripe", {
@@ -150,7 +152,7 @@ describe("billing invariants", () => {
     );
 
     expect(response.status).toBe(400);
-    expect(syncSubscriptionFromStripe).not.toHaveBeenCalled();
+    expect(syncStripeSubscription).not.toHaveBeenCalled();
   });
 
   it("INV-BIL-008 degrades to an explicit unconfigured state without touching billing reads", async function bil008() {

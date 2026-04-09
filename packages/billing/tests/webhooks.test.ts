@@ -1,5 +1,29 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+// -------------------------------------------
+// projects/saasy/packages/billing/tests/webhooks.test.ts
+//
+// function makeSubscription()             L27
+// id                                      L28
+// customer                                L29
+// priceId                                 L30
+// status                                  L31
+// cancelAtPeriodEnd                       L32
+// interval                                L33
+// currentPeriodStart                      L34
+// currentPeriodEnd                        L35
+// function makeSelectBuilder()            L57
+// async function loadWebhooksModule()     L67
+// customerRows                            L68
+// id                                      L69
+// priceResolver                           L69
+// version                                 L69
+// id                                      L95
+// version                                 L95
+// id                                     L405
+// version                                L405
+// -------------------------------------------
+
 function makeSubscription(options: {
   id?: string;
   customer?: string;
@@ -118,7 +142,7 @@ describe("billing webhooks", () => {
   it("skips sync when no local customer matches the Stripe customer", async function webhooks002() {
     const { mod, db } = await loadWebhooksModule({ customerRows: [] });
 
-    await mod.syncSubscriptionFromStripe({
+    await mod.syncStripeSubscription({
       id: "sub_123",
       customer: "cus_missing",
       items: {
@@ -151,7 +175,7 @@ describe("billing webhooks", () => {
       customerRows: [customer],
     });
 
-    await mod.syncSubscriptionFromStripe({
+    await mod.syncStripeSubscription({
       id: "sub_123",
       customer: "cus_123",
       items: {
@@ -198,7 +222,7 @@ describe("billing webhooks", () => {
       customerRows: [customer],
     });
 
-    await mod.syncSubscriptionFromStripe(
+    await mod.syncStripeSubscription(
       makeSubscription({
         id: "sub_upgrade",
         priceId: "price_pro_v1",
@@ -206,7 +230,7 @@ describe("billing webhooks", () => {
       }) as never
     );
 
-    await mod.syncSubscriptionFromStripe(
+    await mod.syncStripeSubscription(
       makeSubscription({
         id: "sub_upgrade",
         priceId: "price_ultra_v1",
@@ -237,7 +261,7 @@ describe("billing webhooks", () => {
       customerRows: [customer],
     });
 
-    await mod.syncSubscriptionFromStripe(
+    await mod.syncStripeSubscription(
       makeSubscription({
         id: "sub_downgrade",
         priceId: "price_ultra_v1",
@@ -245,7 +269,7 @@ describe("billing webhooks", () => {
       }) as never
     );
 
-    await mod.syncSubscriptionFromStripe(
+    await mod.syncStripeSubscription(
       makeSubscription({
         id: "sub_downgrade",
         priceId: "price_pro_v1",
@@ -276,7 +300,7 @@ describe("billing webhooks", () => {
       customerRows: [customer],
     });
 
-    await mod.syncSubscriptionFromStripe(
+    await mod.syncStripeSubscription(
       makeSubscription({
         id: "sub_canceling",
         priceId: "price_pro_v1",
@@ -307,7 +331,7 @@ describe("billing webhooks", () => {
       customerRows: [customer],
     });
 
-    await mod.syncSubscriptionFromStripe(
+    await mod.syncStripeSubscription(
       makeSubscription({
         id: "sub_deleted",
         priceId: "price_ultra_v1",
@@ -345,8 +369,8 @@ describe("billing webhooks", () => {
       cancelAtPeriodEnd: false,
     });
 
-    await mod.syncSubscriptionFromStripe(eventPayload as never);
-    await mod.syncSubscriptionFromStripe(eventPayload as never);
+    await mod.syncStripeSubscription(eventPayload as never);
+    await mod.syncStripeSubscription(eventPayload as never);
 
     expect(values).toHaveBeenCalledTimes(2);
     expect(values).toHaveBeenNthCalledWith(
@@ -390,7 +414,7 @@ describe("billing webhooks", () => {
       priceResolver: legacyResolver,
     });
 
-    await mod.syncSubscriptionFromStripe(
+    await mod.syncStripeSubscription(
       makeSubscription({
         id: "sub_legacy",
         priceId: "price_pro_v1",
