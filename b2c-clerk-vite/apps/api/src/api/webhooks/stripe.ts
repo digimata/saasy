@@ -12,10 +12,13 @@ import {
   CUSTOMER_SUBSCRIPTION_RESUMED,
 } from "@repo/billing";
 
-import { NotFoundError, UnauthorizedError, ValidationError } from "@/lib/error";
+import { ServiceUnavailableError, UnauthorizedError, ValidationError } from "@/lib/error";
+import { handleError } from "@/lib/error-handler";
 import { logger } from "@/lib/logger";
 
 const webhooks = new Hono();
+
+webhooks.onError(handleError);
 
 /**
  * POST /webhooks/stripe
@@ -25,7 +28,7 @@ const webhooks = new Hono();
  */
 webhooks.post("/", async (c) => {
   if (!isWebhookConfigured()) {
-    throw new NotFoundError("Stripe webhook is not configured");
+    throw new ServiceUnavailableError("Stripe webhook is not configured");
   }
 
   const signature = c.req.header("stripe-signature");

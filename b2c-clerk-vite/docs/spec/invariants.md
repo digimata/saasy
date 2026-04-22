@@ -57,9 +57,10 @@ It is intentionally narrower than the B2B template's invariant set. The B2C temp
 - single-user accounts, not workspaces or memberships
 - Clerk as the auth system of record
 - a local `auth.users` mirror in Postgres
+- optional Stripe-backed user billing
 - a protected app shell and public auth entry surfaces
 
-It does not currently need B2B-only invariant families such as workspace, membership, invitation, billing, or entitlements.
+It does not currently need B2B-only invariant families such as workspace, membership, invitation, or server-side entitlements.
 
 ## 2. How to Use This Spec
 

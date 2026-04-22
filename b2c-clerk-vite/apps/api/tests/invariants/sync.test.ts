@@ -189,6 +189,43 @@ describe("sync invariants", () => {
     });
   });
 
+  it.fails(
+    "INV-AUTH-001 keeps canonical email identities globally unique",
+    async () => {
+      const first_clerk_user_id = test_clerk_id("canonical_first");
+      const second_clerk_user_id = test_clerk_id("canonical_second");
+
+      const app = build();
+
+      svix_state.event = user_event(
+        "user.created",
+        first_clerk_user_id,
+        "User.Name@example.com",
+      );
+
+      const first = await app.request("http://localhost/webhooks/clerk", {
+        method: "POST",
+        headers: webhook_headers(),
+        body: JSON.stringify({ id: first_clerk_user_id }),
+      });
+
+      svix_state.event = user_event(
+        "user.created",
+        second_clerk_user_id,
+        "user.name@example.com",
+      );
+
+      const second = await app.request("http://localhost/webhooks/clerk", {
+        method: "POST",
+        headers: webhook_headers(),
+        body: JSON.stringify({ id: second_clerk_user_id }),
+      });
+
+      expect(first.status).toBe(200);
+      expect(second.status).toBe(409);
+    },
+  );
+
   it("INV-SYNC-001 rejects webhook requests with invalid svix proof", async () => {
     svix_state.should_throw = true;
 

@@ -1,4 +1,4 @@
-type StatusCode = 400 | 401 | 403 | 404 | 409 | 500 | 501;
+type StatusCode = 400 | 401 | 403 | 404 | 409 | 500 | 501 | 503;
 
 export abstract class APIError extends Error {
   abstract readonly code: string;
@@ -66,6 +66,14 @@ export class InternalServerError extends APIError {
   readonly code = "internal_server_error";
   readonly statusCode = 500;
   constructor(message = "Internal server error", metadata?: unknown) {
+    super(message, metadata);
+  }
+}
+
+export class ServiceUnavailableError extends APIError {
+  readonly code = "service_unavailable";
+  readonly statusCode = 503;
+  constructor(message = "Service unavailable", metadata?: unknown) {
     super(message, metadata);
   }
 }

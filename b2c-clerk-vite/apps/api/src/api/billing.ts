@@ -13,7 +13,8 @@ import {
 } from "@repo/billing";
 
 import { env } from "@/lib/env";
-import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/error";
+import { ServiceUnavailableError, ValidationError } from "@/lib/error";
+import { handleError } from "@/lib/error-handler";
 import { requireAuth, currentUserId } from "@/lib/auth";
 import { ensureLocalUser } from "@/lib/user";
 
@@ -27,6 +28,7 @@ import { ensureLocalUser } from "@/lib/user";
 
 const billing = new Hono();
 
+billing.onError(handleError);
 billing.use("*", requireAuth);
 
 billing.get("/state", async (c) => {
@@ -61,17 +63,17 @@ billing.get("/invoices", async (c) => {
 const checkoutSchema = z.object({
   plan: z.enum(["pro"] as const satisfies readonly Exclude<PlanId, "free">[]),
   returnUrl: z.url().optional(),
-});
+}).strict();
 
 billing.post("/checkout", zValidator("json", checkoutSchema), async (c) => {
   if (!isBillingConfigured()) {
-    throw new NotFoundError("Billing is not configured");
+    throw new ServiceUnavailableError("Billing is not configured");
   }
 
   const { plan, returnUrl } = c.req.valid("json");
 
   if (!canCreateCheckout(plan)) {
-    throw new ForbiddenError(`Plan "${plan}" is not available for checkout`);
+    throw new ServiceUnavailableError(`Billing is not configured for ${plan}`);
   }
 
   const clerkUserId = currentUserId(c);
@@ -80,7 +82,7 @@ billing.post("/checkout", zValidator("json", checkoutSchema), async (c) => {
   const url = await createCheckoutSession(
     user,
     plan,
-    returnUrl ?? `${env.WEB_ORIGIN}/settings/billing`,
+    returnUrl ?? `${env.WEB_ORIGIN}/settings?tab=billing`,
   );
 
   return c.json({ url });
@@ -88,11 +90,11 @@ billing.post("/checkout", zValidator("json", checkoutSchema), async (c) => {
 
 const portalSchema = z.object({
   returnUrl: z.url().optional(),
-});
+}).strict();
 
 billing.post("/portal", zValidator("json", portalSchema), async (c) => {
   if (!isBillingConfigured()) {
-    throw new NotFoundError("Billing is not configured");
+    throw new ServiceUnavailableError("Billing is not configured");
   }
 
   const { returnUrl } = c.req.valid("json");
@@ -101,7 +103,7 @@ billing.post("/portal", zValidator("json", portalSchema), async (c) => {
 
   const url = await createPortalSession(
     user,
-    returnUrl ?? `${env.WEB_ORIGIN}/settings/billing`,
+    returnUrl ?? `${env.WEB_ORIGIN}/settings?tab=billing`,
   );
 
   if (!url) throw new ValidationError("Failed to create portal session");

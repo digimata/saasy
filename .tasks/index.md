@@ -2,7 +2,7 @@
 project: saasy
 alias: SSY
 path: projects/saasy/.tasks/index.md
-updated: 2026-04-22T00:33:26Z
+updated: 2026-04-22T00:43:10Z
 generated_by: kdb
 ---
 
@@ -18,16 +18,17 @@ _(none)_
 
 _(none)_
 
-## Backlog (2)
+## Backlog (1)
 
 | Task | Title | Cycle | p |
 |---|---|---|---|
 | [SSY-0011](T-0011.md) | Scaffold packages/email (React Email + Resend) with welcome + receipt templates | — | 2 |
-| [SSY-0012](T-0012.md) | Port overview dashboard widgets (revenue, metric chart) — depends on SSY-0008 | — | 3 |
 
-## Parked (0)
+## Parked (1)
 
-_(none)_
+| Task | Title | Cycle | p |
+|---|---|---|---|
+| `SSY-0012` | Port overview dashboard widgets (revenue, metric chart) — depends on SSY-0008 | — | 3 |
 
 ## Done (10)
 
