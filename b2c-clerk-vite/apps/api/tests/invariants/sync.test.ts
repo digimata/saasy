@@ -189,7 +189,7 @@ describe("sync invariants", () => {
     });
   });
 
-  it.fails(
+  it(
     "INV-AUTH-001 keeps canonical email identities globally unique",
     async () => {
       const first_clerk_user_id = test_clerk_id("canonical_first");

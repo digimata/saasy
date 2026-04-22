@@ -18,6 +18,7 @@
     "@hono/zod-validator": "^0.7.6",
     "@repo/billing": "workspace:^",
     "@repo/db": "workspace:*",
+    "@repo/email": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.12.14",
     "pino": "^10.3.1",

@@ -16,6 +16,7 @@ export {
   createCheckoutSession,
   createPortalSession,
   getUserBillingState,
+  getUserByStripeCustomerId,
   getUserInvoices,
   type BillingState,
   type Invoice,

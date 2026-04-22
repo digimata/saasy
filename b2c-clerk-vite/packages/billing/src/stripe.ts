@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { eq, and, desc } from "drizzle-orm";
 
 import { db } from "@repo/db";
-import { customers, subscriptions, type Subscription, type User } from "@repo/db";
+import { customers, subscriptions, users, type Subscription, type User } from "@repo/db";
 
 import { env } from "./env";
 import { CURRENT_PLAN_VERSION, PLANS, type Plan, type PlanId } from "./plans";
@@ -191,6 +191,26 @@ export async function getUserBillingState(userId: string): Promise<BillingState>
     .orderBy(desc(subscriptions.createdAt));
 
   return toBillingState(!!customer, selectCurrentSubscription(orderedSubscriptions));
+}
+
+// ─── Customer lookup ───────────────────────────────────────
+
+export async function getUserByStripeCustomerId(
+  stripeCustomerId: string,
+): Promise<User | null> {
+  const [row] = await db
+    .select({ user: users })
+    .from(customers)
+    .innerJoin(users, eq(users.id, customers.userId))
+    .where(
+      and(
+        eq(customers.providerCustomerId, stripeCustomerId),
+        eq(customers.provider, "stripe"),
+      ),
+    )
+    .limit(1);
+
+  return row?.user ?? null;
 }
 
 // ─── Invoices ──────────────────────────────────────────────

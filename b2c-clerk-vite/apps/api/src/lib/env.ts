@@ -25,6 +25,10 @@ const schema = z.object({
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   STRIPE_PRICE_PRO: z.string().optional(),
   STRIPE_PORTAL_CONFIGURATION_ID: z.string().optional(),
+
+  // Email (optional — without RESEND_API_KEY, sendEmail logs the rendered template)
+  RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
 });
 
 export const env = schema.parse(process.env);

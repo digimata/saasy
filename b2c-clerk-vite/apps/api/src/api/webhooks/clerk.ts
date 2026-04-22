@@ -2,10 +2,12 @@ import { Hono } from "hono";
 import { Webhook } from "svix";
 import { eq } from "drizzle-orm";
 import { db, users, type NewUser } from "@repo/db";
+import { sendEmail, WelcomeEmailTemplate } from "@repo/email";
 
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
-import { UnauthorizedError, ValidationError } from "@/lib/error";
+import { ConflictError, UnauthorizedError, ValidationError } from "@/lib/error";
+import { canonicalEmail, isEmailUniqueViolation } from "@/lib/email";
 import {
   primaryEmail,
   type ClerkEvent,
@@ -48,32 +50,52 @@ webhooks.post("/", async (cx) => {
     case "user.created":
     case "user.updated": {
       const data = event.data as ClerkUserData;
-      const email = primaryEmail(data);
-      if (!email) throw new ValidationError("missing primary email");
+      const rawEmail = primaryEmail(data);
+      if (!rawEmail) throw new ValidationError("missing primary email");
 
       const row: NewUser = {
         clerkUserId: data.id,
-        email,
+        email: canonicalEmail(rawEmail),
         firstName: data.first_name,
         lastName: data.last_name,
         imageUrl: data.image_url,
       };
 
-      await db
-        .insert(users)
-        .values(row)
-        .onConflictDoUpdate({
-          target: users.clerkUserId,
-          set: {
-            email: row.email,
-            firstName: row.firstName,
-            lastName: row.lastName,
-            imageUrl: row.imageUrl,
-            updatedAt: new Date(),
-          },
-        });
+      try {
+        await db
+          .insert(users)
+          .values(row)
+          .onConflictDoUpdate({
+            target: users.clerkUserId,
+            set: {
+              email: row.email,
+              firstName: row.firstName,
+              lastName: row.lastName,
+              imageUrl: row.imageUrl,
+              updatedAt: new Date(),
+            },
+          });
+      } catch (err) {
+        // INV-AUTH-001: distinct Clerk IDs landing on the same canonical email
+        // are a conflict, not an internal error.
+        if (isEmailUniqueViolation(err)) {
+          throw new ConflictError("email already in use");
+        }
+        throw err;
+      }
 
       logger.info({ clerkUserId: data.id, type: event.type }, "user.synced");
+
+      if (event.type === "user.created") {
+        try {
+          await sendEmail(row.email, WelcomeEmailTemplate, {
+            firstName: row.firstName ?? null,
+          });
+        } catch (err) {
+          logger.error({ err, clerkUserId: data.id }, "email.welcome.failed");
+        }
+      }
+
       return cx.json({ ok: true });
     }
 

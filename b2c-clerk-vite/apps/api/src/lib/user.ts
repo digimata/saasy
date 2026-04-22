@@ -2,7 +2,8 @@ import { eq } from "drizzle-orm";
 import type { Context } from "hono";
 
 import { db, users, type NewUser, type User } from "@repo/db";
-import { InternalServerError } from "@/lib/error";
+import { ConflictError, InternalServerError } from "@/lib/error";
+import { canonicalEmail, isEmailUniqueViolation } from "@/lib/email";
 import { logger } from "@/lib/logger";
 
 /**
@@ -32,26 +33,36 @@ export async function ensureLocalUser(c: Context, clerkUserId: string): Promise<
 
   const row: NewUser = {
     clerkUserId: clerkUser.id,
-    email: primaryEmail,
+    email: canonicalEmail(primaryEmail),
     firstName: clerkUser.firstName,
     lastName: clerkUser.lastName,
     imageUrl: clerkUser.imageUrl,
   };
 
-  const [inserted] = await db
-    .insert(users)
-    .values(row)
-    .onConflictDoUpdate({
-      target: users.clerkUserId,
-      set: {
-        email: row.email,
-        firstName: row.firstName,
-        lastName: row.lastName,
-        imageUrl: row.imageUrl,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
+  let inserted: User | undefined;
+  try {
+    [inserted] = await db
+      .insert(users)
+      .values(row)
+      .onConflictDoUpdate({
+        target: users.clerkUserId,
+        set: {
+          email: row.email,
+          firstName: row.firstName,
+          lastName: row.lastName,
+          imageUrl: row.imageUrl,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+  } catch (err) {
+    // INV-AUTH-001: distinct Clerk IDs landing on the same canonical email
+    // are a conflict, not an internal error.
+    if (isEmailUniqueViolation(err)) {
+      throw new ConflictError("email already in use");
+    }
+    throw err;
+  }
 
   if (!inserted) throw new InternalServerError("Failed to sync user");
 
