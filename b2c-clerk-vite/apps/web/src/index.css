@@ -1,0 +1,278 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ─── Design System Tokens ─── */
+
+@theme inline {
+  /* ── Backgrounds ── */
+  --color-ds-bg-100: var(--ds-bg-100);
+  --color-ds-bg-200: var(--ds-bg-200);
+  --color-ds-bg-300: var(--ds-bg-300);
+
+  /* ── Gray ── */
+  --color-ds-gray-100: var(--ds-gray-100);
+  --color-ds-gray-200: var(--ds-gray-200);
+  --color-ds-gray-300: var(--ds-gray-300);
+  --color-ds-gray-500: var(--ds-gray-500);
+  --color-ds-gray-600: var(--ds-gray-600);
+  --color-ds-gray-900: var(--ds-gray-900);
+  --color-ds-gray-1000: var(--ds-gray-1000);
+
+  /* ── Steel ── */
+  --color-ds-steel-100: var(--ds-steel-100);
+  --color-ds-steel-500: var(--ds-steel-500);
+
+  /* ── Blue ── */
+  --color-ds-blue-500: var(--ds-blue-500);
+
+  /* ── Green ── */
+  --color-ds-green-500: var(--ds-green-500);
+
+  /* ── Shadcn semantic ── */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: calc(var(--radius-lg) * 1.4);
+  --radius-2xl: calc(var(--radius-lg) * 1.8);
+  --radius-3xl: calc(var(--radius-lg) * 2.2);
+  --radius-4xl: calc(var(--radius-lg) * 2.6);
+}
+
+/* ─── Light Mode ─── */
+
+:root {
+  /* Backgrounds: page (tinted) → card (white) → elevated (near-white) */
+  --ds-bg-100: #fcfcfd;
+  --ds-bg-200: oklch(100% 0 0);
+  --ds-bg-300: oklch(98.43% 0.001 197);
+
+  /* Gray */
+  --ds-gray-100: oklch(95.19% 0.003 265);
+  --ds-gray-200: oklch(96.70% 0.003 265);
+  --ds-gray-600: oklch(48.72% 0.030 280);
+  --ds-gray-900: oklch(30% 0.005 286);
+  --ds-gray-1000: oklch(23.16% 0.004 286);
+
+  /* Steel */
+  --ds-steel-100: oklch(86.44% 0.063 251);
+  --ds-steel-500: oklch(57.77% 0.030 272);
+
+  /* Blue */
+  --ds-blue-500: oklch(86.44% 0.063 251);
+
+  /* Green */
+  --ds-green-500: oklch(74.59% 0.028 208);
+
+  /* Semantic (shadcn) */
+  --background: var(--ds-bg-100);
+  --foreground: var(--ds-gray-1000);
+  --card: var(--ds-bg-200);
+  --card-foreground: var(--ds-gray-1000);
+  --popover: var(--ds-bg-200);
+  --popover-foreground: var(--ds-gray-1000);
+  --primary: var(--ds-gray-1000);
+  --primary-foreground: var(--ds-bg-100);
+  --secondary: var(--ds-bg-300);
+  --secondary-foreground: var(--ds-gray-1000);
+  --muted: var(--ds-bg-300);
+  --muted-foreground: var(--ds-gray-600);
+  --accent: var(--ds-blue-500);
+  --accent-foreground: var(--ds-gray-1000);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: var(--ds-gray-100);
+  --input: var(--ds-gray-100);
+  --ring: var(--ds-blue-500);
+}
+
+/* ─── Dark Mode ─── */
+
+.dark {
+  --ds-bg-100: oklch(12.91% 0.003 286);
+  --ds-bg-200: oklch(17.35% 0.002 286);
+  --ds-bg-300: oklch(20.55% 0.004 286);
+
+  --ds-gray-100: oklch(23.20% 0.006 286);
+  --ds-gray-200: oklch(23.48% 0.004 264);
+  --ds-gray-300: oklch(27.68% 0.000 0);
+  --ds-gray-500: oklch(45.37% 0.026 280);
+  --ds-gray-600: oklch(55.12% 0.015 281);
+  --ds-gray-900: oklch(88.19% 0.003 265);
+  --ds-gray-1000: oklch(100% 0 0);
+
+  --ds-steel-100: oklch(86.44% 0.063 251);
+  --ds-steel-500: oklch(57.77% 0.030 272);
+
+  --ds-blue-500: oklch(86.44% 0.063 251);
+
+  --ds-green-500: oklch(74.59% 0.028 208);
+
+  --background: var(--ds-bg-100);
+  --foreground: var(--ds-gray-1000);
+  --card: var(--ds-bg-200);
+  --card-foreground: var(--ds-gray-1000);
+  --popover: var(--ds-bg-200);
+  --popover-foreground: var(--ds-gray-1000);
+  --primary: var(--ds-gray-1000);
+  --primary-foreground: var(--ds-bg-100);
+  --secondary: var(--ds-bg-300);
+  --secondary-foreground: var(--ds-gray-1000);
+  --muted: var(--ds-bg-300);
+  --muted-foreground: var(--ds-gray-600);
+  --accent: var(--ds-blue-500);
+  --accent-foreground: var(--ds-gray-1000);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: var(--ds-gray-100);
+  --input: var(--ds-gray-100);
+  --ring: var(--ds-blue-500);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* ─── Typography Utilities ─── */
+
+@utility text-display-48 {
+  font-size: 48px;
+  line-height: 52px;
+  letter-spacing: -1.92px;
+  font-weight: 400;
+}
+
+@utility text-display-40 {
+  font-size: 40px;
+  line-height: 44px;
+  letter-spacing: -1.6px;
+  font-weight: 400;
+}
+
+@utility text-display-32 {
+  font-size: 32px;
+  line-height: 36px;
+  letter-spacing: -1.28px;
+  font-weight: 400;
+}
+
+@utility text-heading-32 {
+  font-size: 32px;
+  line-height: 40px;
+  letter-spacing: -1.28px;
+  font-weight: 600;
+}
+
+@utility text-heading-24 {
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -0.96px;
+  font-weight: 600;
+}
+
+@utility text-heading-20 {
+  font-size: 20px;
+  line-height: 26px;
+  letter-spacing: -0.4px;
+  font-weight: 600;
+}
+
+@utility text-heading-16 {
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: -0.32px;
+  font-weight: 600;
+}
+
+@utility text-heading-14 {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: -0.28px;
+  font-weight: 600;
+}
+
+@utility text-label-16 {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+@utility text-label-14 {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+@utility text-label-13 {
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+@utility text-label-12 {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+}
+
+@utility text-copy-16 {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+}
+
+@utility text-copy-14 {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+}
+
+@utility text-copy-13 {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 400;
+}
+
+@utility text-button-16 {
+  font-size: 16px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+@utility text-button-14 {
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+}
+
+@utility text-button-12 {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+}

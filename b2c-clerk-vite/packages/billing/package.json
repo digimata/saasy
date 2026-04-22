@@ -1,0 +1,18 @@
+{
+  "name": "@repo/billing",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/db": "workspace:*",
+    "drizzle-orm": "^0.45.2",
+    "stripe": "^18.1.0",
+    "zod": "^4.3.6"
+  }
+}
