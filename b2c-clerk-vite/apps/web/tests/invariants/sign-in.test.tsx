@@ -255,22 +255,17 @@ describe("sign-in invariants", () => {
     });
   });
 
-  it.fails(
-    "INV-SES-003 fails closed for off-app redirect targets",
-    async () => {
-      router_state.redirect_to = "https://evil.example/phish";
+  it("INV-SES-003 fails closed for off-app redirect targets", () => {
+    router_state.redirect_to = "https://evil.example/phish";
 
-      render(<SignInPage />);
+    render(<SignInPage />);
 
-      fireEvent.click(screen.getByRole("button", { name: /google/i }));
+    fireEvent.click(screen.getByRole("button", { name: /google/i }));
 
-      expect(
-        clerk_state.sign_in.authenticateWithRedirect,
-      ).toHaveBeenCalledWith({
-        strategy: "oauth_google",
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
-      });
-    },
-  );
+    expect(clerk_state.sign_in.authenticateWithRedirect).toHaveBeenCalledWith({
+      strategy: "oauth_google",
+      redirectUrl: "/sso-callback",
+      redirectUrlComplete: "/",
+    });
+  });
 });

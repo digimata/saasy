@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useSignIn, useSignUp } from "@clerk/clerk-react";
 
 import { Button } from "@/components/ui/button";
+import { sanitizeRedirectTo } from "@/lib/redirect";
 import { InputBubble } from "@/components/ui/input-bubble";
 import {
   InputOTP,
@@ -65,7 +66,7 @@ export default function SignInPage() {
   const watchedEmail = emailForm.watch("email");
   const isValidEmail = emailSchema.safeParse({ email: watchedEmail }).success;
 
-  const redirectTo = searchParams.get("redirectTo") || "/";
+  const redirectTo = sanitizeRedirectTo(searchParams.get("redirectTo"));
 
   const onEmailSubmit = async (values: EmailValues) => {
     if (!signInLoaded || !signUpLoaded || !signIn || !signUp) return;
